@@ -22,11 +22,11 @@ export function createGame(seed = 1) {
     saveVersion: SAVE_VERSION, seed: seedNum, rngState: 0, day: 1, phase: 'playing',
     ap: { left: config.ap.base, max: config.ap.base },
     cash: st.cash,
-    debt: { balance: config.debt.initial, paidThisSeason: 0, missed: 0 },
+    debt: { balance: config.debt.initial, paidThisSeason: 0, arrears: 0, missed: 0 },
     market: { mult: 1, trend: 0 },
     pens: [], pigs: [], pedigree: {}, nextSerial: 1, nextPen: 1, nextRecipe: 1,
     inventory: { feeds: { ...st.feeds }, ingredients: {}, vaccine: 0 },
-    recipes: [], facilities: { feed_mixer: false, lairage: false, gene_lab: false },
+    recipes: [], facilities: { piggery: false, feed_mixer: false, lairage: false },
     workers: [], shipments: [], reports: [],
     stats: { shipped: 0, revenue: 0, gradeCounts: { brand: 0, '1+': 0, '1': 0, '2': 0, out: 0 }, deaths: 0, births: 0, soldPiglets: 0 },
   };
@@ -63,10 +63,13 @@ const herdCount = (s) => s.pigs.length;
 const penById = (s, id) => s.pens.find((p) => p.id === id);
 const pigById = (s, id) => s.pigs.find((p) => p.id === id);
 const penPigs = (s, penId) => s.pigs.filter((p) => p.penId === penId);
-const freeSpace = (s, pen) => pen.capacity - penPigs(s, pen.id).filter((p) => stageOf(p, s.day) !== 'suckling').length;
+const freeSpace = (s, pen) => pen.capacity - penPigs(s, pen.id).length;
+const totalPlaces = (s) => Math.min(config.herdMax, s.pens.reduce((t, p) => t + p.capacity, 0));
 const apMax = (s) => config.ap.base + s.workers.reduce((a, w) => a + items.workers[w.id].apBonus, 0);
 const seasonOf = (day) => Math.floor((day - 1) / DPS);
-const minDue = (s) => Math.min(config.debt.minPerSeason[seasonOf(s.day) % config.debt.minPerSeason.length], s.debt.balance);
+const seasonMin = (s) => config.debt.minPerSeason[seasonOf(s.day) % config.debt.minPerSeason.length];
+// Due this season = this season's minimum + unpaid minimums from earlier seasons (arrears).
+const minDue = (s) => Math.min(seasonMin(s) + s.debt.arrears, s.debt.balance);
 const pricePerKg = (s) => Math.round(config.market.carcassPricePerKg * s.market.mult);
 
 class ActionError extends Error { constructor(code, extra) { super(code); this.code = code; this.extra = extra; } }
@@ -144,11 +147,15 @@ const ACTIONS = {
     ev('petted', { pigId: pig.id });
   },
   movePig(s, a, ev) {
-    const pig = needPig(s, a.pigId); const pen = needPen(s, a.penId);
-    if (pig.penId === pen.id) fail('param.invalid');
-    if (freeSpace(s, pen) < 1) fail('pen.full');
-    spendAp(s, 1); pig.penId = pen.id;
-    ev('moved', { pigId: pig.id, penId: pen.id });
+    // One pig (pigId) or a group (pigIds) to one pen for 1 AP.
+    const ids = a.pigIds ? [...new Set(a.pigIds)] : [a.pigId];
+    const pen = needPen(s, a.penId);
+    const pigs = ids.map((id) => needPig(s, id));
+    if (!pigs.length || pigs.some((p) => p.penId === pen.id)) fail('param.invalid');
+    if (freeSpace(s, pen) < pigs.length) fail('pen.full');
+    spendAp(s, 1);
+    for (const p of pigs) p.penId = pen.id;
+    ev('moved', { pigIds: ids, penId: pen.id });
   },
   setRole(s, a, ev) {
     const pig = needPig(s, a.pigId);
@@ -179,8 +186,7 @@ const ACTIONS = {
       if (!canShip(p, s.day) || s.shipments.some((x) => x.pigId === id)) fail('pig.notShippable', { pigId: id });
     }
     spendAp(s, 2 + (a.gentle ? 2 : 0));
-    const fee = items.services.truckFeePerPig * ids.length;
-    spendCash(s, fee);
+    const fee = items.services.truckFeePerPig * ids.length; // taken from the sale tonight
     const pens = new Set(ids.map((id) => pigById(s, id).penId));
     const batch = s.shipments.length ? Math.max(...s.shipments.map((x) => x.batch)) + 1 : 1;
     for (const id of ids) s.shipments.push({ pigId: id, fast: a.fast ?? 'normal', gentle: !!a.gentle, useLairage: !!a.useLairage, mixed: pens.size > 1, batch });
@@ -190,7 +196,6 @@ const ACTIONS = {
     const i = s.shipments.findIndex((x) => x.pigId === a.pigId);
     if (i < 0) fail('param.invalid');
     s.shipments.splice(i, 1);
-    s.cash += items.services.truckFeePerPig;
     ev('shipCancelled', { pigIds: [a.pigId] });
   },
   buy(s, a, ev) {
@@ -199,7 +204,7 @@ const ACTIONS = {
     if (!(qty > 0) || (!bulk && !Number.isInteger(qty))) fail('param.invalid');
     if (a.itemId === 'piglet') {
       const price = items.piglets[a.breedId] ?? fail('param.invalid');
-      if (herdCount(s) + qty > config.herdMax) fail('herd.full');
+      if (herdCount(s) + qty > totalPlaces(s)) fail('herd.full');
       const pen = a.penId ? needPen(s, a.penId) : s.pens.find((p) => freeSpace(s, p) >= qty);
       if (!pen || freeSpace(s, pen) < qty) fail('pen.full');
       spendCash(s, price * qty);
@@ -216,7 +221,7 @@ const ACTIONS = {
     }
     if (a.itemId === 'boar') {
       const price = Math.round(items.piglets[a.breedId] * 2.5) || fail('param.invalid');
-      if (herdCount(s) + 1 > config.herdMax) fail('herd.full');
+      if (herdCount(s) + 1 > totalPlaces(s)) fail('herd.full');
       const pen = s.pens.find((p) => freeSpace(s, p) >= 1) ?? fail('pen.full');
       spendCash(s, price);
       const p = addFounder(s, s._rng, a.breedId, 'M', config.life.matureAt, pen.id);
@@ -233,9 +238,9 @@ const ACTIONS = {
       s.inventory.ingredients[a.itemId] = r1((s.inventory.ingredients[a.itemId] ?? 0) + qty);
     } else if (a.itemId === 'vaccine') {
       spendCash(s, items.vaccine.price * qty); s.inventory.vaccine += qty;
-    } else if (a.itemId === 'pen') {
-      if (s.pens.length >= items.facilities.pen.max) fail('facility.max');
-      spendCash(s, items.facilities.pen.price); addPen(s, items.facilities.pen.capacity);
+    } else if (a.itemId === 'piggery') {
+      if (s.facilities.piggery) fail('facility.owned');
+      spendCash(s, items.facilities.piggery.price); s.facilities.piggery = true; addPen(s, items.facilities.piggery.capacity);
     } else if (items.facilities[a.itemId]) {
       if (s.facilities[a.itemId]) fail('facility.owned');
       spendCash(s, items.facilities[a.itemId].price); s.facilities[a.itemId] = true;
@@ -324,7 +329,7 @@ export function listActions(state, target = { kind: 'farm' }) {
     if (pig.sex === 'F') {
       const sires = s.pigs.filter((p) => p.sex === 'M' && !p.castrated && stageOf(p, s.day) === 'breeder');
       cands.push({ type: 'breed', sireId: sires[0]?.id, damId: pig.id,
-        _params: { sireId: sires.map((p) => ({ id: p.id, expectedF: Math.round(kinship(s.pedigree, p.id, pig.id) * 1000) / 1000, risk: fRisk(kinship(s.pedigree, p.id, pig.id)) })) } });
+        _params: { sireId: sires.map((p) => ({ id: p.id, expectedF: Math.round(kinship(s.pedigree, p.id, pig.id) * 1000) / 1000, risk: fRisk(kinship(s.pedigree, p.id, pig.id)) })), warning: herdCount(s) >= totalPlaces(s) ? 'herd.full' : null } });
     }
   } else if (target.kind === 'shop') {
     return shopList(s).map((x) => ({ type: 'buy', apCost: 0, cost: x.price, enabled: x.enabled, reason: x.reason, params: { itemId: x.itemId, breedId: x.breedId } }));
@@ -354,7 +359,7 @@ function feedOptions(s) {
 
 function shopList(s) {
   const out = [];
-  const full = herdCount(s) >= config.herdMax;
+  const full = herdCount(s) >= totalPlaces(s);
   for (const [breedId, price] of Object.entries(items.piglets)) {
     out.push({ itemId: 'piglet', breedId, price, unit: 'head', enabled: !full && s.cash >= price, reason: full ? 'herd.full' : s.cash < price ? 'cash.notEnough' : undefined });
     const bp = Math.round(price * 2.5);
@@ -364,8 +369,8 @@ function shopList(s) {
   for (const [id, f] of Object.entries(items.ingredients)) out.push({ itemId: id, price: f.price, unit: 'kg', enabled: s.facilities.feed_mixer, reason: s.facilities.feed_mixer ? undefined : 'facility.missing' });
   out.push({ itemId: 'vaccine', price: items.vaccine.price, unit: 'dose', enabled: true });
   for (const [id, f] of Object.entries(items.facilities)) {
-    const owned = id === 'pen' ? s.pens.length >= f.max : s.facilities[id];
-    out.push({ itemId: id, price: f.price, unit: 'unit', enabled: !owned && s.cash >= f.price, reason: owned ? (id === 'pen' ? 'facility.max' : 'facility.owned') : s.cash < f.price ? 'cash.notEnough' : undefined });
+    const owned = s.facilities[id];
+    out.push({ itemId: id, price: f.price, unit: 'unit', enabled: !owned && s.cash >= f.price, reason: owned ? 'facility.owned' : s.cash < f.price ? 'cash.notEnough' : undefined });
   }
   return out;
 }
@@ -394,11 +399,12 @@ export function endDay(state) {
     const c = slaughter(pig, sh, rng);
     const g = gradePig({ ...c });
     const mult = config.grades[g.grade];
-    const revenue = Math.round(c.carcassKg * price * mult);
+    const truckFee = items.services.truckFeePerPig;
+    const revenue = Math.round(c.carcassKg * price * mult) - truckFee;
     s.cash += revenue;
     const sheet = { pigId: pig.id, name: pig.name, breedId: breedIdOf(pig.breedMix), day: day + 1, liveKg: c.liveKg, carcassKg: c.carcassKg,
       backfatMm: c.backfat, imf: c.imf, meatColor: c.meatColor, fatColor: c.fatColor, bellyScore: c.bellyScore, PSE: c.PSE, DFD: c.DFD,
-      defect: c.defect, grade1: g.grade1, grade2: g.grade2, grade: g.grade, pricePerKg: Math.round(price * mult), revenue };
+      defect: c.defect, grade1: g.grade1, grade2: g.grade2, grade: g.grade, pricePerKg: Math.round(price * mult), truckFee, revenue };
     s.reports.unshift(sheet);
     s.stats.shipped++; s.stats.revenue += revenue; s.stats.gradeCounts[g.grade]++;
     s.pigs = s.pigs.filter((p) => p.id !== pig.id);
@@ -461,13 +467,14 @@ export function endDay(state) {
       s.pedigree[id] = { sire: sire.id, dam: dam.id, serial };
       const F = inbreeding(s.pedigree, id);
       if (!rng.chance(0.95 * (1 - F * config.inbreedingDepression.survival))) { stillborn++; delete s.pedigree[id]; continue; }
-      if (herdCount(s) >= config.herdMax) { soldExtra++; delete s.pedigree[id]; continue; }
+      const home = [penById(s, dam.penId), ...s.pens].find((p) => p && freeSpace(s, p) > 0);
+      if (!home || herdCount(s) >= config.herdMax) { soldExtra++; delete s.pedigree[id]; continue; }
       const genome = breedGenome(sireGenome, dam.genome, (sireF + dam.F) / 2, rng);
       const pig = newPig({ id, serial, sex: rng.chance(0.5) ? 'F' : 'M', breedMix: mix, genome, F: Math.round(F * 10000) / 10000,
-        sireId: sire.id, damId: dam.id, bornDay: day + 1, penId: dam.penId, weightKg: config.life.birthKg * (0.85 + rng() * 0.3) });
+        sireId: sire.id, damId: dam.id, bornDay: day + 1, penId: home.id, weightKg: config.life.birthKg * (0.85 + rng() * 0.3) });
       s.pigs.push(pig); ids.push(id);
     }
-    const extraCash = soldExtra * Math.round(items.piglets.yorkshire_landrace * 0.4);
+    const extraCash = soldExtra * items.weanedPigletSalePrice;
     s.cash += extraCash;
     s.stats.births += ids.length; s.stats.soldPiglets += soldExtra;
     ev('birth', { damId: dam.id, pigIds: ids, stillborn, soldExtra, extraCash });
@@ -519,31 +526,31 @@ export function endDay(state) {
 }
 
 function payday(s, ev) {
+  // Decision 27: the minimum due (this season + arrears) must be paid in full by payday, or it is a miss.
+  // Full payment resets the count; 3 misses in a row = foreclosure. The sim auto-pays if cash allows.
   const d = s.debt;
-  const due = Math.max(0, minDue(s) - d.paidThisSeason);
-  let paid = 0, missedNow = false;
-  if (due > 0) {
-    if (s.cash >= due) { s.cash -= due; d.balance -= due; paid = due; }
-    else { missedNow = true; d.missed++; ev('debtMissed', { missed: d.missed }); }
-  }
+  let due = Math.max(0, minDue(s) - d.paidThisSeason);
+  let missedNow = false;
+  if (due > 0 && s.cash >= due) { s.cash -= due; d.balance -= due; d.paidThisSeason += due; due = 0; }
+  if (due > 0) { missedNow = true; d.missed++; d.arrears = due; ev('debtMissed', { missed: d.missed, arrears: due }); }
+  else { d.missed = 0; d.arrears = 0; }
   const interest = Math.round(d.balance * config.debt.ratePerSeason * (missedNow ? config.debt.lateRateMult : 1));
   d.balance += interest;
-  ev('debtDue', { paid: paid + d.paidThisSeason, interest, balance: d.balance, missed: d.missed });
+  ev('debtDue', { paid: d.paidThisSeason, interest, balance: d.balance, missed: d.missed, arrears: d.arrears });
   d.paidThisSeason = 0;
   if (d.missed >= config.debt.maxMissed) { s.phase = 'foreclosed'; ev('foreclosed'); }
 }
 
 // ---------- view ----------
 export function getView(s) {
-  const lab = s.facilities.gene_lab;
   return {
     simVersion: SIM_VERSION, phase: s.phase,
     day: s.day, year: 1 + Math.floor((s.day - 1) / YEAR_DAYS), season: seasonOf(s.day) % config.time.seasons, dayOfSeason: ((s.day - 1) % DPS) + 1,
     ap: { ...s.ap }, cash: s.cash,
-    debt: { balance: s.debt.balance, ratePerSeason: config.debt.ratePerSeason, minPerSeason: minDue(s), paidThisSeason: s.debt.paidThisSeason,
+    debt: { balance: s.debt.balance, ratePerSeason: config.debt.ratePerSeason, minPerSeason: seasonMin(s), arrears: s.debt.arrears, minDue: minDue(s), paidThisSeason: s.debt.paidThisSeason,
       nextDueDay: Math.ceil(s.day / DPS) * DPS, missed: s.debt.missed, maxMissed: config.debt.maxMissed },
     market: { carcassPricePerKg: pricePerKg(s), trend: s.market.trend, gradeMultipliers: { ...config.grades } },
-    herd: { count: s.pigs.length, max: config.herdMax },
+    herd: { count: s.pigs.length, max: config.herdMax, places: totalPlaces(s) },
     pens: s.pens.map((p) => ({ id: p.id, capacity: p.capacity, hygiene: p.hygiene, feed: { ...p.feed }, fedToday: p.fedToday, pigIds: penPigs(s, p.id).map((x) => x.id) })),
     pigs: s.pigs.map((p) => ({
       id: p.id, name: p.name, breedId: breedIdOf(p.breedMix), breedMix: { ...p.breedMix }, sex: p.sex, castrated: p.castrated,
@@ -554,8 +561,8 @@ export function getView(s) {
       pregnantDueDay: p.pregnantDueDay, marketWindow: inMarketWindow(p, s.day),
       shippable: canShip(p, s.day) && !s.shipments.some((x) => x.pigId === p.id), shipQueued: s.shipments.some((x) => x.pigId === p.id),
       appearance: phenotype(p.genome), F: p.F, fRisk: fRisk(p.F),
-      genotype: lab ? structuredClone(p.genome.loci) : null, bv: lab ? { ...p.genome.bv } : null,
-      sireId: p.sireId, damId: p.damId,
+      // Decision 31: no gene lab in the prototype; genotype and breeding values never leave the sim.
+      sireId: p.sireId, damId: p.damId, pedigree: pedigree2(s, p.id),
     })),
     inventory: structuredClone(s.inventory), recipes: structuredClone(s.recipes), facilities: { ...s.facilities },
     workers: s.workers.map((w) => ({ id: w.id, wage: items.workers[w.id].wage, apBonus: items.workers[w.id].apBonus })),
@@ -563,6 +570,13 @@ export function getView(s) {
     shipments: s.shipments.map((x) => ({ pigId: x.pigId, fast: x.fast, gentle: x.gentle, useLairage: x.useLairage })),
     reports: structuredClone(s.reports), shop: shopList(s), stats: structuredClone(s.stats),
   };
+}
+
+/** Two generations: parents and grandparents (ids, null when unknown). */
+function pedigree2(s, id) {
+  const ped = s.pedigree; const me = ped[id] ?? {};
+  const up = (pid) => (pid ? { id: pid, sireId: ped[pid]?.sire ?? null, damId: ped[pid]?.dam ?? null } : null);
+  return { sire: up(me.sire), dam: up(me.dam) };
 }
 
 // ---------- save / load ----------

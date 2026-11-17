@@ -13,7 +13,7 @@ test('start state: 2 piglets, cash, debt, day 1', () => {
   assert.equal(v.day, 1); assert.equal(v.pigs.length, 2);
   assert.equal(v.cash, config.start.cash); assert.equal(v.debt.balance, config.debt.initial);
   assert.equal(v.ap.left, config.ap.base);
-  assert.equal(v.pigs[0].genotype, null, 'genotype hidden before the gene lab');
+  assert.equal(v.herd.places, 8, 'start: 2 pens x 4');
 });
 
 test('same seed + same actions = same game; state is not mutated', () => {
@@ -54,12 +54,15 @@ test('listActions reports disabled actions with a reason', () => {
   assert.ok(listActions(s, { kind: 'pig', id: getView(s).pigs[0].id }).length >= 5);
 });
 
-test('herd cap of 30', () => {
+test('places: 8 at start, piggery adds 22, cap 30, buying blocked when full', () => {
   let s = createGame(4);
   s.cash = 1e9;
-  for (let i = 0; i < 3; i++) s = ok(doAction(s, { type: 'buy', itemId: 'pen' }));
-  s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 4 }));
-  for (let i = 0; i < 4; i++) s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 6 }));
+  s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 2 }));
+  s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 4, penId: 'pen-2' }));
+  assert.equal(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 1 }).error.code, 'herd.full');
+  s = ok(doAction(s, { type: 'buy', itemId: 'piggery' }));
+  assert.equal(doAction(s, { type: 'buy', itemId: 'piggery' }).error.code, 'facility.owned');
+  s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 22 }));
   assert.equal(getView(s).herd.count, 30);
   assert.equal(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'duroc', qty: 1 }).error.code, 'herd.full');
 });
@@ -76,6 +79,41 @@ test('debt: minimum is auto-paid on payday, interest added', () => {
   assert.equal(out.state.debt.missed, 0);
 });
 
+test('every minimum payment exceeds that season interest, so on-time payments shrink the balance', () => {
+  let bal = config.debt.initial;
+  for (const min of config.debt.minPerSeason) {
+    const interest = Math.round((bal - min) * config.debt.ratePerSeason);
+    assert.ok(min > Math.round(bal * config.debt.ratePerSeason), `min ${min} vs interest on ${bal}`);
+    const next = bal - min + interest;
+    assert.ok(next < bal); bal = next;
+  }
+});
+
+test('debt: misses must be consecutive; full payment incl. arrears resets the count; partial counts as a miss', () => {
+  const min = config.debt.minPerSeason;
+  let s = run(createGame(11), 27); s.cash = 0;
+  s = endDay(s).state;
+  assert.equal(s.debt.missed, 1); assert.equal(s.debt.arrears, min[0]);
+  // Season 2: pay part of it -> still a miss.
+  s = run(s, 27); s.cash = 0; s = ok(doAction({ ...s, cash: 100000 }, { type: 'payDebt', amount: 100000 }));
+  s = endDay(s).state;
+  assert.equal(s.debt.missed, 2);
+  assert.equal(s.debt.arrears, min[0] + min[1] - 100000);
+  // Season 3: pay everything owed -> back to 0.
+  s = run(s, 27); s.cash = s.debt.arrears + min[2];
+  s = endDay(s).state;
+  assert.equal(s.debt.missed, 0); assert.equal(s.debt.arrears, 0); assert.equal(s.phase, 'playing');
+});
+
+test('genotype and breeding values never appear in the view (decision 31)', () => {
+  let s = createGame(12); s.cash = 1e8;
+  s = ok(doAction(s, { type: 'buy', itemId: 'piglet', breedId: 'berkshire', qty: 2 }));
+  const text = JSON.stringify(getView(s));
+  for (const k of ['"KIT"', '"MC1R"', '"RYR1"', '"SPOT"', '"loci"', '"genome"', '"bv"', '"genotype"']) assert.ok(!text.includes(k), k);
+  assert.ok(getView(s).pigs[2].appearance.pattern === 'points');
+  assert.ok(!listActions(s, { kind: 'shop' }).some((a) => a.params.itemId === 'gene_lab'));
+});
+
 test('debt: early payments count toward the minimum', () => {
   let s = createGame(5);
   s.cash = 5_000_000;
@@ -86,7 +124,7 @@ test('debt: early payments count toward the minimum', () => {
   assert.equal(due.interest, Math.round((config.debt.initial - 1_000_000) * config.debt.ratePerSeason));
 });
 
-test('debt: a miss doubles that interest; 3 misses = foreclosure', () => {
+test('debt: a miss doubles that interest; 3 misses in a row = foreclosure', () => {
   let s = createGame(6);
   s = run(s, 27);
   s.cash = 0;
