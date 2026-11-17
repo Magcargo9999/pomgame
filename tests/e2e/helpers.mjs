@@ -71,10 +71,11 @@ export async function gameNums(page) {
       const m = el && el.textContent.replace(/,/g, '').match(/-?\d+/);
       return m ? Number(m[0]) : undefined;
     };
-    const st = window.__ranch?.app?.state ?? {};
+    const st = window.__game?.state ?? window.__ranch?.app?.state ?? {};
     const ap = typeof st.ap === 'number' ? st.ap : st.ap?.left;
     return {
-      day: num('day') ?? st.day,
+      // data-testid="day" shows '1년차 봄 1일' (year first), so the absolute day comes from state.
+      day: st.day ?? num('day'),
       ap: num('ap') ?? ap,
       cash: num('cash') ?? st.cash,
     };

@@ -64,7 +64,8 @@ test('smoke: load, move, end day, reload', { skip }, async (t) => {
 
     await check('end day advances exactly one day and refills AP (A2, A4)', async () => {
       await clickEndDay(page);
-      await page.waitForFunction((d) => (window.__ranch?.app?.state?.day ?? 0) !== d, n0.day, { timeout: 5_000 }).catch(() => {});
+      await page.waitForFunction((d) => ((window.__game?.state ?? window.__ranch?.app?.state)?.day ?? 0) !== d, n0.day, { timeout: 5_000 }).catch(() => {});
+      await page.keyboard.press('Escape'); // close the morning summary
       const n1 = await gameNums(page);
       assert.equal(n1.day, n0.day + 1);
       assert.equal(n1.ap, n0.ap, 'AP not refilled to the daily max');

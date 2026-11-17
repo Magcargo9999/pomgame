@@ -75,7 +75,7 @@ test('D5 breeding allowed when full but warns (D28)', { skip }, () => {
   const info = sim.listActions(s, { kind: 'pig', id: dam.id }).find((a) => a.type === 'breed');
   assert.ok(info, 'no breed action listed');
   assert.equal(info.enabled, true, `breeding blocked when full: ${info.reason}`);
-  assert.ok(info.warning || info.warnings?.length, `no full-farm warning on breed action: ${JSON.stringify(info)}`);
+  assert.ok(info.warning || info.options?.warning || info.params?.warning,`no full-farm warning on breed action: ${JSON.stringify(info)}`);
 });
 
 test('F2/F3 grade report next morning with a real grade code', { skip }, () => {
@@ -139,8 +139,10 @@ test('H5b full payment resets the miss count (D27)', { skip }, () => {
   let s = createGame(1);
   s = missPayday(s); s = missPayday(s); s = payPayday(s);
   assert.equal(getView(s).debt.missed, 0, 'missed not reset after a full payment');
-  s = missPayday(s); s = missPayday(s);
-  assert.equal(getView(s).phase, 'playing', 'foreclosed after miss,miss,pay,miss,miss');
+  // The prototype year has 4 paydays (the game stops at yearComplete), so: miss, miss, pay, miss.
+  s = missPayday(s);
+  assert.notEqual(getView(s).phase, 'foreclosed', 'foreclosed after miss,miss,pay,miss');
+  assert.equal(getView(s).debt.missed, 1);
 });
 
 test('H5a partial payment counts as missed (D27)', { skip }, () => {
