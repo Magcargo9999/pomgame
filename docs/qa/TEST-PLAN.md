@@ -44,7 +44,7 @@ E2E uses the Playwright copy installed on this machine through `npx` (no package
 |---|---|---|---|
 | C1 | Starting herd | Exactly 2 piglets (자돈), species pig | E, U |
 | C2 | Starting cash | Small positive cash (value from data file) | U |
-| C3 | Starting debt | 30,000,000 G (or the retuned value in data — see Open O3) | U |
+| C3 | Starting debt | Value in `data/economy.json` (docs/tech/BALANCE.md supersedes GDD §3 numbers, D29) | U |
 | C4 | Species | Only pigs can be bought or appear (D3) | U, E |
 | C5 | Breeds on sale | 요크셔, 랜드레이스, 듀록, 버크셔, 재래흑돼지, 점박이 돼지 (D11, D14) — no other breed | U |
 
@@ -52,9 +52,11 @@ E2E uses the Playwright copy installed on this machine through `npx` (no package
 
 | ID | Check | Expected | Level |
 |---|---|---|---|
-| D1 | Max 30 head at once | With 30 pigs, buying is refused with a message | U, E |
-| D2 | Births count toward the cap | A litter that would exceed 30 is handled by a defined rule (see Open O2); count never exceeds 30 | U |
-| D3 | Sold/dead pigs free a slot | After shipping 1 of 30, buying 1 succeeds | U |
+| D1 | Buying blocked when full | With every pen place taken, buying is refused with a message (D28) | U, E |
+| D2 | Litter overflow is sold at once | Piglets beyond free places go to the feed dealer at the weaned-piglet price; cash rises by count × that price; a notice event appears; head count never exceeds capacity (D28) | U, E |
+| D3 | Sold/dead pigs free a place | After shipping 1 pig from a full farm, buying 1 succeeds | U |
+| D4 | Pen capacity | Start: 2 pens × 4 = 8 places. T1 piggery adds 22 → 30. Global cap 30 never exceeded (D28) | U, E |
+| D5 | Breeding allowed when full, with a warning | Breeding screen shows a full-farm warning but does not block (D28) | E |
 
 ## E. Pig life cycle and growth (§0.4, §1.1)
 
@@ -78,8 +80,8 @@ E2E uses the Playwright copy installed on this machine through `npx` (no package
 | F4 | 1st grade table | carcass 83–<93 kg and backfat 17–<25 mm → 1+; 80–<98 and 15–<28 → 1; else 2. Test both sides of every boundary (82.9/83/92.9/93, 16.9/17/24.9/25, 79.9/80/97.9/98, 14.9/15/27.9/28) | U |
 | F5 | Final = lower of 1st and 2nd grade | e.g. 1st = 1+, 2nd = 1 → 1 | U |
 | F6 | PSE or DFD drops 2 steps | 1+ with PSE → 2; 1 with PSE → 등외 | U |
-| F7 | Brand cert "빚더미 목장 명품" | Shown as a separate certificate **above** a 1+ grade, not as a grade; only for 1+ pigs meeting the cert rule (IMF ≥ 4.0, fatColor ≤ 1, no PSE unless redefined) | U, E |
-| F8 | Price multipliers | 1+ ×1.15, 1 ×1.00, 2 ×0.85, 등외 ×0.60; cert multiplier as in data (replaces ×1.45) | U |
+| F7 | Brand cert "빚더미 목장 명품" | Shown as a separate certificate **above** a 1+ grade, not as a grade; given iff grade 1+ AND IMF ≥ 4.0 AND fatColor ≤ 1 AND no PSE AND no DFD (D30). Test each condition failing alone → no cert | U, E |
+| F8 | Price multipliers | 1+ ×1.15, 1 ×1.00, 2 ×0.85, 등외 ×0.60; cert ×1.45 over grade 1 (starting value, read from data, D30) | U |
 | F9 | Lairage lowers PSE | With 계류장 built, PSE probability ×0.5 (seeded RNG, compare means over 10,000 runs ±5%) | U |
 | F10 | Pre-shipping choices matter | Fasting 12–18 h + lairage + same-pen shipping gives the lowest PSE/DFD | U |
 | F11 | Grading is deterministic with a seed | Same seed + same actions → same grade report | U |
@@ -88,8 +90,9 @@ E2E uses the Playwright copy installed on this machine through `npx` (no package
 
 | ID | Check | Expected | Level |
 |---|---|---|---|
-| G1 | Genotype hidden before gene lab | Animal panel, breeding screen and save-visible UI show phenotype only; no allele letters, no probabilities | E, R |
-| G2 | Genotype shown after gene lab Lv1 | Allele pairs and offspring probabilities appear | U, E |
+| G1 | Genotype never shown (D31: no gene lab in prototype) | No screen shows allele pairs (e.g. `Nn`, `ED/e`), locus names (KIT, MC1R, RYR1) or offspring genotype probabilities. E: open every screen/menu and scan visible text; R: grep `src/ui` for genome/loci reads | E, R |
+| G2 | Breeding screen content | Shows phenotype, 2-generation pedigree (parents + grandparents), expected F and its risk band (D31) | E |
+| G9 | No gene lab anywhere | No gene lab building, menu item or unlock in data or UI | R, E |
 | G3 | Mendel: one allele from each parent | For every locus, child alleles = one from sire + one from dam (10,000 seeded breeds, frequencies within ±2% of expected) | U |
 | G4 | BV inheritance | Mean child BV = parent mean; spread shrinks with parent F (§2.3) | U |
 | G5 | Inbreeding coefficient | Full-sib mating → child F = 0.25; half-sib → 0.125; unrelated → 0 | U |
@@ -103,9 +106,11 @@ E2E uses the Playwright copy installed on this machine through `npx` (no package
 |---|---|---|---|
 | H1 | Payment day | Last day of each season (days 28, 56, 84, 112) — 4 payments in the 1-year loop | U, E |
 | H2 | Interest | 3% of balance added on payment day | U |
-| H3 | Minimum payment year 1 | 600,000 G per season (or retuned value, Open O3) | U |
+| H3 | Minimum payment beats interest | For every season in `data/economy.json`: minimum payment > that season's interest, so paying on time always lowers the balance (D29 hard rule) | U |
 | H4 | 1 missed payment | Late interest doubled + reputation down; game continues | U, E |
-| H5 | **3 missed payments → foreclosure** | Game-over screen (압류); no further turns possible | U, E |
+| H5 | **3 consecutive missed payments → foreclosure** | Game-over screen (압류); no further turns possible (D27) | U, E |
+| H5a | Partial payment counts as missed | Paying less than the full amount due on a due day adds 1 to the miss count (D27) | U |
+| H5b | Full payment resets the count | Miss, miss, pay full (incl. arrears), miss, miss → no foreclosure; count = 2 (D27) | U |
 | H6 | Early repayment | Allowed any day; reduces balance; interest next payment day is lower | U, E |
 | H7 | Payment amount cannot exceed cash | Refused with a message; cash never negative | U, E |
 | H8 | Balance target "tight but possible" | Monte Carlo sim: an average-care strategy just meets year-1 payments; good grades leave a margin (D26) | U (backend sim) |
@@ -159,10 +164,10 @@ Done when each formula in those sections is either matched in code or filed as a
 - `data-testid="day"`, `"ap"`, `"cash"`, `"end-day"`, `"export-save"`, `"import-save"` on the matching elements.
 - `window.__game.player` → `{x, y}` for position (read-only debug hook), or `data-testid="player-pos"` text `x,y`.
 
-## Open questions (need a design decision from god)
+## Design rulings (god, GDD decisions 27–31)
 
-- **O1** "3 missed payments": consecutive or total? Does an on-time payment reset the count?
-- **O2** Herd cap vs. litters: a farrowing that would pass 30 head — piglets lost, sale forced, or breeding blocked when the herd is near 30? Also §3.3 T0 says "돼지 4두" and T1 "돼지 20두": are those facility caps under the global 30?
-- **O3** §3.1 numbers do not add up: 3% of 30,000,000 is 900,000 interest per season, more than the 600,000 minimum, so the balance grows instead of reaching the 29,000,000 target. The GDD marks §3 as to be retuned; tests H2/H3/H8 use the data file values once the backend sets them.
-- **O4** Brand cert rule: is it the old 1+★ rule (IMF ≥ 4.0, fatColor ≤ 1, no PSE), and what is its price multiplier?
-- **O5** Gene lab Lv1 costs a cumulative 8,000,000 G (T3), unreachable in year 1 with the §3 numbers. Is it in the prototype at all? If not, G1 is "always hidden" and G2 is out of scope.
+- **D27** Foreclosure counts *consecutive* misses; a full payment (incl. arrears) on a due day resets the count to 0; a partial payment counts as missed. → H5, H5a, H5b
+- **D28** Global cap 30; pens 2 × 4 = 8 at start, T1 piggery +22; breeding allowed when full with a warning; overflow piglets sold at once at the weaned-piglet price with a notice; buying blocked when full. → D1–D5
+- **D29** Debt numbers live in `data/economy.json`, tuned by `tools/balance-sim.js`; `docs/tech/BALANCE.md` supersedes GDD §3. Minimum payment > interest every season. → C3, H2, H3, H8
+- **D30** Brand cert = 1+ AND IMF ≥ 4.0 AND fatColor ≤ 1 AND no PSE/DFD; ×1.45 over grade 1. → F7, F8
+- **D31** No gene lab in the prototype; genotype never shown; breeding screen shows phenotype, 2-generation pedigree, expected F + risk band. → G1, G2, G9
