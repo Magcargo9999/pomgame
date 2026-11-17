@@ -1,0 +1,11 @@
+[
+  {"species":"pig","locus":"KIT","alleles":["I","Be","i"],"mode":"dominant",
+   "effects":{"I":"white","Be":"belt","i":"colored"},"sprite":"coat_base"},
+  {"species":"pig","locus":"MC1R","alleles":["ED","EP","e"],"mode":"dominant",
+   "effects":{"ED":"black","EP":"black_spotted","e":"red"},"sprite":"coat_color"},
+  {"species":"pig","locus":"RYR1","alleles":["N","n"],"mode":"additive",
+   "effects":{"NN":{"lean":0,"pPSE":0.02},"Nn":{"lean":0.02,"pPSE":0.08},"nn":{"lean":0.06,"pPSE":0.35}}},
+  {"species":"pig","locus":"SPOT","alleles":["S","s"],"mode":"recessive",
+   "effects":{"ss":"white_spots"},"sprite":"pattern",
+   "note":"ss on black = Berkshire points, on red = rare red-spotted, with EP = rare patchwork"}
+]

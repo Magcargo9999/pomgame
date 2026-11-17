@@ -1,0 +1,31 @@
+{
+  "piglets": {
+    "yorkshire_landrace": 90000, "duroc": 110000, "berkshire": 130000, "korean_black": 150000, "spotted": 120000
+  },
+  "pigletAgeDays": 5,
+  "commercialFeeds": {
+    "feed_starter":  {"price": 900, "shares": {"corn":0.45,"soybean_meal":0.45,"barley":0.10}},
+    "feed_grower":   {"price": 650, "shares": {"corn":0.60,"soybean_meal":0.28,"barley":0.12}},
+    "feed_finisher": {"price": 600, "shares": {"corn":0.70,"soybean_meal":0.18,"barley":0.12}}
+  },
+  "ingredients": {
+    "corn":         {"price": 450,   "energy": 1.12, "protein": 0.55, "unsat": 0.30, "barley": 0},
+    "barley":       {"price": 420,   "energy": 0.98, "protein": 0.70, "unsat": 0.05, "barley": 1},
+    "soybean_meal": {"price": 800,   "energy": 0.95, "protein": 2.60, "unsat": 0.10, "barley": 0},
+    "food_waste":   {"price": 120,   "energy": 1.05, "protein": 0.80, "unsat": 0.85, "barley": 0},
+    "vitamin_e":    {"price": 20000, "energy": 0,    "protein": 0,    "unsat": 0,    "barley": 0, "additive": true}
+  },
+  "vaccine": {"price": 6000},
+  "facilities": {
+    "pen":        {"price": 300000, "capacity": 6, "max": 5},
+    "feed_mixer": {"price": 500000},
+    "lairage":    {"price": 1500000},
+    "gene_lab":   {"price": 3000000}
+  },
+  "workers": {
+    "helper_kim":  {"wage": 30000, "apBonus": 4, "mistakeRate": 0.06},
+    "helper_park": {"wage": 45000, "apBonus": 6, "mistakeRate": 0.03},
+    "vet_tech_lee":{"wage": 60000, "apBonus": 6, "mistakeRate": 0.01}
+  },
+  "services": {"vetFee": 25000, "truckFeePerPig": 10000}
+}

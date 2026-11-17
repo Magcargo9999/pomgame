@@ -1,0 +1,27 @@
+{
+  "yorkshire_landrace": {
+    "alleleFreq": {"KIT":{"I":1},"MC1R":{"ED":0.2,"EP":0.3,"e":0.5},"RYR1":{"N":0.85,"n":0.15},"SPOT":{"S":0.9,"s":0.1}},
+    "bvMean": {"growth":0.4,"lean":0.5,"imf":-0.3,"litter":1.0},
+    "growthMult":1.05,"backfatMult":0.9,"breedIMF":0.9,"litterBase":12
+  },
+  "duroc": {
+    "alleleFreq": {"KIT":{"i":1},"MC1R":{"e":1},"RYR1":{"N":0.97,"n":0.03},"SPOT":{"S":1}},
+    "bvMean": {"growth":0.5,"lean":0.2,"imf":0.5,"litter":-0.5},
+    "growthMult":1.05,"backfatMult":1.0,"breedIMF":1.3,"litterBase":9
+  },
+  "berkshire": {
+    "alleleFreq": {"KIT":{"i":1},"MC1R":{"ED":1},"RYR1":{"N":0.95,"n":0.05},"SPOT":{"s":1}},
+    "bvMean": {"growth":-0.2,"lean":-0.2,"imf":0.8,"litter":-0.5},
+    "growthMult":0.95,"backfatMult":1.1,"breedIMF":1.25,"litterBase":9
+  },
+  "korean_black": {
+    "alleleFreq": {"KIT":{"i":1},"MC1R":{"ED":1},"RYR1":{"N":1},"SPOT":{"S":1}},
+    "bvMean": {"growth":-0.8,"lean":-0.5,"imf":1.0,"litter":-1.0},
+    "growthMult":0.85,"backfatMult":1.15,"breedIMF":1.35,"litterBase":8
+  },
+  "spotted": {
+    "alleleFreq": {"KIT":{"i":1},"MC1R":{"EP":1},"RYR1":{"N":0.9,"n":0.1},"SPOT":{"S":1}},
+    "bvMean": {"growth":0.0,"lean":0.0,"imf":0.3,"litter":0.0},
+    "growthMult":1.0,"backfatMult":1.05,"breedIMF":1.1,"litterBase":10
+  }
+}
