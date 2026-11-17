@@ -1,0 +1,102 @@
+{
+  "time": {
+    "daysPerSeason": 28,
+    "seasons": 4
+  },
+  "ap": {
+    "base": 10
+  },
+  "herdMax": 30,
+  "start": {
+    "pens": 2,
+    "penCapacity": 4,
+    "piglets": [
+      {
+        "breedId": "yorkshire_landrace",
+        "sex": "F",
+        "ageDays": 14
+      },
+      {
+        "breedId": "duroc",
+        "sex": "M",
+        "ageDays": 14
+      }
+    ],
+    "feeds": {
+      "feed_starter": 40,
+      "feed_grower": 60
+    }
+  },
+  "life": {
+    "nurseryAt": 5,
+    "growerAt": 13,
+    "finisherAt": 25,
+    "matureAt": 40,
+    "gestation": 26,
+    "weanAt": 5,
+    "marketWindow": [
+      36,
+      42
+    ],
+    "birthKg": 1.4
+  },
+  "growth": {
+    "stageBase": {
+      "suckling": 1.1,
+      "nursery": 2.9,
+      "grower": 3.4,
+      "finisher": 2.9,
+      "breeder": 0.6,
+      "pregnant": 0.5,
+      "lactating": 0
+    },
+    "fcr": {
+      "suckling": 0,
+      "nursery": 1.5,
+      "grower": 2.3,
+      "finisher": 2.9
+    },
+    "maintenanceKg": {
+      "breeder": 8,
+      "pregnant": 9,
+      "lactating": 16
+    },
+    "proteinNeed": {
+      "suckling": 1.4,
+      "nursery": 1.4,
+      "grower": 1.2,
+      "finisher": 1,
+      "breeder": 1,
+      "pregnant": 1,
+      "lactating": 1.2
+    },
+    "backfatPerKgFat": 0.95,
+    "imfStart": 1.2,
+    "imfPerDay": 0.055,
+    "dressing": 0.77,
+    "maxWeight": 180
+  },
+  "disease": {
+    "pInfectBase": 0.012,
+    "subclinicalDays": 3,
+    "recoverDays": 5,
+    "neglectDays": 7,
+    "pDeathNeglect": 0.15,
+    "withdrawalDays": 7,
+    "vaccineFactor": 0.4,
+    "vaccineDays": 56
+  },
+  "inbreedingDepression": {
+    "growth": 0.25,
+    "litter": 0.6,
+    "survival": 0.4
+  },
+  "sigmaA": {
+    "growth": 1,
+    "lean": 1,
+    "imf": 1,
+    "litter": 1
+  },
+  "mutationRate": 0.002,
+  "conception": 0.85
+}
