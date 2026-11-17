@@ -22,7 +22,7 @@ export function newPig({ id, serial, sex, breedMix, genome, F = 0, sireId = null
   const w = weightKg ?? LIFE.birthKg;
   return {
     id, name: null, serial, sex, castrated: false,
-    role: sex === 'F' ? 'breeder' : 'finisher',
+    role: 'finisher', // every pig is raised for market unless the player keeps it as a breeder
     breedMix, genome, F, sireId, damId, bornDay, penId,
     weightKg: r1(w), backfatMm: r1(1 + w * 0.12), imf: 0, imfStarted: false,
     fatColorSum: 0, fatColorDays: 0, vitEDays: 0,

@@ -32,7 +32,8 @@ export function createGame(seed = 1) {
   };
   for (let i = 0; i < st.pens; i++) addPen(s, st.penCapacity);
   for (const p of st.piglets) {
-    addFounder(s, rng, p.breedId, p.sex, p.ageDays, s.pens[0].id);
+    const pig = addFounder(s, rng, p.breedId, p.sex, p.ageDays, s.pens[0].id);
+    if (p.role) pig.role = p.role;
   }
   s.pens[0].feed = { kind: 'commercial', id: 'feed_starter' };
   s.rngState = rng.state();
@@ -213,7 +214,6 @@ const ACTIONS = {
         const sex = rng.chance(0.5) ? 'F' : 'M';
         const p = addFounder(s, rng, a.breedId, sex, items.pigletAgeDays, pen.id);
         if (sex === 'M') p.castrated = true; // shop boars come castrated; females stay breeder-eligible
-        if (sex === 'F' && a.asFinisher) p.role = 'finisher';
         ids.push(p.id);
       }
       ev('bought', { itemId: 'piglet', breedId: a.breedId, qty, cost: price * qty, pigIds: ids });

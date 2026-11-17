@@ -10,6 +10,7 @@ const ok = (r) => { assert.equal(r.ok, true, JSON.stringify(r.error)); return r.
 
 test('start state: 2 piglets, cash, debt, day 1', () => {
   const v = getView(createGame(1));
+  assert.deepEqual(v.pigs.map((p) => p.role), ['breeder', 'finisher'], 'inherited gilt kept as breeder');
   assert.equal(v.day, 1); assert.equal(v.pigs.length, 2);
   assert.equal(v.cash, config.start.cash); assert.equal(v.debt.balance, config.debt.initial);
   assert.equal(v.ap.left, config.ap.base);
