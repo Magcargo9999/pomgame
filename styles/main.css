@@ -92,10 +92,13 @@ table.grid { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.grid th, table.grid td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
 table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 td.num, dd.num { font-variant-numeric: tabular-nums; text-align: right; }
+.meter { display: inline-flex; align-items: center; gap: 6px; }
+.meter .num { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 2.5ch; }
 .bar { position: relative; display: inline-block; width: 90px; height: 14px; background: #e8dcc0; border: 1px solid var(--line); border-radius: 3px; vertical-align: middle; }
 .bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--good); border-radius: 2px; }
 .bar.warn .fill { background: var(--bad); }
-.bar .num { position: relative; font-size: 10px; padding-left: 4px; color: #fff; text-shadow: 0 1px 0 #000; }
+.peds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ped ul { margin: 4px 0 0; padding-left: 16px; font-size: 13px; }
 
 .detail { display: grid; grid-template-columns: 96px 1fr; gap: 4px 16px; }
 .detail .portrait { width: 96px; height: 96px; image-rendering: pixelated; background: #e6d7b2; border: 2px solid var(--line); border-radius: var(--radius); }
@@ -147,6 +150,8 @@ ul.events { padding-left: 18px; margin: 0; line-height: 1.7; }
   .hud-actions { margin-left: 0; width: 100%; }
   .hud-actions .btn { flex: 1 1 auto; padding: 5px 6px; font-size: 12px; }
   #help { display: none; }
+  .toast:nth-last-child(n+3) { display: none; }
+  .peds { grid-template-columns: 1fr; }
   .detail { grid-template-columns: 1fr; }
   .mixrow { grid-template-columns: 1fr 64px 14px; }
   .mixrow input[type=range] { grid-column: 1 / -1; grid-row: 2; }

@@ -279,6 +279,7 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     setState(s) { state = s; syncActors(); dirty = true; },
     cheer(pigId) { const a = actors.get(pigId); if (a) a.happyUntil = a.t + 360; },
     resize,
+    playerPos() { return { x: player.tx, y: player.ty, dir: player.dir }; },
     get usingRealSprites() { return sheets.adult.real; },
   };
 }

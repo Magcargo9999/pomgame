@@ -30,6 +30,7 @@ const app = {
       }
       case 'debtOk': case 'debtMissed': return t(`event.${e.type}`, { n: e.n, interest: money(e.interest) });
       case 'yearEnd': return t('event.yearEnd', { balance: money(e.balance) });
+      case 'bornSold': return t('event.bornSold', { n: e.n, amount: money(e.amount) });
       case 'paid': return t('event.paid', { amount: money(e.amount) });
       case 'bought': return t('event.bought', { item: t(`feed.item.${e.item}`), kg: e.kg });
       case 'cleaned': return t('event.cleaned');
@@ -38,7 +39,7 @@ const app = {
   },
   act(action) {
     const res = sim.act(this.state, action);
-    if (!res.ok) toast(t(`err.${res.error}`, { cap: sim.rules.pigCap }), 'warn');
+    if (!res.ok) toast(t(`err.${res.error}`, { cap: sim.capacity(this.state) }), 'warn');
     for (const e of res.events) {
       if (e.type === 'petted') world?.cheer(e.pigId);
       toast(this.eventText(e), e.type === 'paid' || e.type === 'mixer' ? 'good' : 'info');
@@ -117,7 +118,7 @@ function refresh() {
     ? t('hud.debtValue', { season: t(`season.${due.season}`), day: due.dayOfSeason, amount: money(di.remaining), left: di.daysLeft })
     : t('hud.debtPaid');
   $('hud-debt').parentElement.classList.toggle('urgent', !!di.remaining && di.daysLeft <= 3);
-  $('hud-pigs').textContent = t('hud.pigs', { n: st.pigs.length, cap: sim.rules.pigCap });
+  $('hud-pigs').textContent = t('hud.pigs', { n: st.pigs.length, cap: sim.capacity(st) });
   world?.setState(st);
 }
 
@@ -158,7 +159,9 @@ async function boot() {
   });
   $('loading').remove();
   canvas.focus();
-  window.__ranch = { app, sim, screens }; // for e2e tests and screenshots
+  // read-only debug hooks for e2e tests (QA): window.__game.player -> {x, y} in tiles
+  window.__ranch = { app, sim, screens };
+  window.__game = Object.freeze({ get player() { return world.playerPos(); }, get state() { return app.state; } });
   document.body.dataset.ready = 'true';
 }
 

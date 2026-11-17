@@ -13,16 +13,16 @@
   <div id="app">
     <header id="hud">
       <h1 class="brand" data-t="game.title"></h1>
-      <div class="stat"><span class="label" data-t="hud.cash"></span><strong id="hud-cash" class="num"></strong></div>
-      <div class="stat" id="hud-ap-wrap" role="group"><span class="label" data-t="hud.ap"></span><span id="hud-ap-pips" class="pips" aria-hidden="true"></span><strong id="hud-ap" class="num"></strong></div>
-      <div class="stat"><span id="hud-date"></span></div>
+      <div class="stat"><span class="label" data-t="hud.cash"></span><strong id="hud-cash" class="num" data-testid="cash"></strong></div>
+      <div class="stat" id="hud-ap-wrap" role="group"><span class="label" data-t="hud.ap"></span><span id="hud-ap-pips" class="pips" aria-hidden="true"></span><strong id="hud-ap" class="num" data-testid="ap"></strong></div>
+      <div class="stat"><span id="hud-date" data-testid="day"></span></div>
       <div class="stat debt"><span class="label" data-t="hud.debt"></span><strong id="hud-debt"></strong></div>
       <div class="stat"><span id="hud-pigs"></span></div>
       <nav class="hud-actions">
         <button id="btn-pigs" class="btn" data-t="hud.pigList"></button>
         <button id="btn-town" class="btn" data-t="town.title"></button>
         <button id="btn-menu" class="btn" data-t="hud.menu"></button>
-        <button id="btn-end" class="btn primary" data-t="hud.endDay"></button>
+        <button id="btn-end" class="btn primary" data-testid="end-day" data-t="hud.endDay"></button>
       </nav>
     </header>
     <main id="stage">

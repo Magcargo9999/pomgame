@@ -11,8 +11,10 @@ export function makeScreens(app) {
   const lookName = (l) => t(`look.${l.coat}`) + t(`pattern.${l.pattern}`);
   const apBtn = (label, cost, onclick, extra = {}) =>
     h('button', { class: 'btn', onclick, disabled: S().ap < cost || extra.disabled }, label, cost ? h('small', { class: 'cost', text: ` · ${t('apCost', { n: cost })}` }) : null);
-  const bar = (v, warnHigh = false) => h('span', { class: `bar${(warnHigh ? v > 60 : v < 40) ? ' warn' : ''}`, role: 'meter', 'aria-valuenow': Math.round(v), 'aria-valuemin': 0, 'aria-valuemax': 100 },
-    h('span', { class: 'fill', style: `width:${Math.round(v)}%` }), h('span', { class: 'num', text: Math.round(v) }));
+  const bar = (v, warnHigh = false) => h('span', { class: 'meter' },
+    h('span', { class: `bar${(warnHigh ? v > 60 : v < 40) ? ' warn' : ''}`, role: 'meter', 'aria-valuenow': Math.round(v), 'aria-valuemin': 0, 'aria-valuemax': 100 },
+      h('span', { class: 'fill', style: `width:${Math.round(v)}%` })),
+    h('span', { class: 'num', text: Math.round(v) }));
 
   // ---------- context menus ----------
   function objectMenu(target, pos) {
@@ -37,7 +39,7 @@ export function makeScreens(app) {
         { label: t('menu.shed.feedAll'), hint: t('apCost', { n: r.ap.feed }), disabled: S().ap < r.ap.feed, run: () => app.act({ type: 'feed' }) },
         { label: t('menu.shed.mix'), run: () => feedScreen() },
       ],
-      pen: [
+      pen: !sim.penCapacity(S(), target.penId) ? [{ label: t('pen.locked'), disabled: true, run: () => {} }] : [
         { label: t('menu.pen.feed'), hint: t('apCost', { n: r.ap.feedPen }), disabled: S().ap < r.ap.feedPen, run: () => app.act({ type: 'feed', penId: target.penId }) },
         { label: t('menu.pen.clean'), hint: t('apCost', { n: r.ap.clean }), disabled: S().ap < r.ap.clean, run: () => app.act({ type: 'clean', penId: target.penId }) },
         { label: t('menu.pen.list'), run: () => pigList(target.penId) },
@@ -45,7 +47,10 @@ export function makeScreens(app) {
       dock: [{ label: t('menu.dock.ship'), run: () => shipping() }],
       gate: [{ label: t('menu.gate.town'), run: () => town('feed') }],
     }[target.kind];
-    const title = target.kind === 'pen' ? `${t('obj.pen', { name: t(`pen.${target.penId}`) })} · ${t('pig.hygiene')} ${Math.round(S().pens[target.penId].hygiene)}` : t(`obj.${target.kind}`);
+    const penCount = target.kind === 'pen' ? S().pigs.filter((p) => p.penId === target.penId).length : 0;
+    const title = target.kind === 'pen'
+      ? `${t('obj.pen', { name: t(`pen.${target.penId}`) })} · ${t('pen.places', { n: penCount, cap: sim.penCapacity(S(), target.penId) })} · ${t('pig.hygiene')} ${Math.round(S().pens[target.penId].hygiene)}`
+      : t(`obj.${target.kind}`);
     if (items) openPopup({ ...pos, title, items });
   }
 
@@ -116,11 +121,24 @@ export function makeScreens(app) {
       const res = app.act({ type: 'breed', sireId: sSel.value, damId: dSel.value });
       if (res.ok) closeModal();
     });
+    // ruling O5: phenotype + 2-generation pedigree + expected F; genotype never shown
+    const nameOf = (id) => { const q = id && sim.findPig(S(), id); return q ? name(q) : id ? id : t('breed.unknownParent'); };
+    const parentOf = (id, k) => sim.findPig(S(), id)?.[k] || null;
+    const ped = (p) => h('div', { class: 'ped' },
+      h('strong', { text: name(p) }), h('small', { class: 'muted', text: ` · ${breedName(p.breed)} · ${t('breed.look')}: ${lookName(p.look)}` }),
+      !p.sire && !p.dam ? h('p', { class: 'muted small', text: t('pig.parentsUnknown') }) : h('ul', {},
+        h('li', {}, `♂ ${nameOf(p.sire)}`, h('small', { class: 'muted', text: ` (${nameOf(parentOf(p.sire, 'sire'))} × ${nameOf(parentOf(p.sire, 'dam'))})` })),
+        h('li', {}, `♀ ${nameOf(p.dam)}`, h('small', { class: 'muted', text: ` (${nameOf(parentOf(p.dam, 'sire'))} × ${nameOf(parentOf(p.dam, 'dam'))})` }))));
     const upd = () => {
       const pv = sim.previewBreeding(S(), sSel.value, dSel.value);
-      out.replaceChildren(pv.ok
-        ? h('p', {}, `${t('breed.F')}: ${(pv.F * 100).toFixed(2)}% `, h('span', { class: `badge risk-${pv.risk}`, text: t(`breed.risk.${pv.risk}`) }), h('br'), t('breed.gestation', { n: pv.gestationDays }))
-        : h('p', { class: 'warn', text: t(`err.${pv.error}`) }));
+      const sp = sim.findPig(S(), sSel.value), dp = sim.findPig(S(), dSel.value);
+      out.replaceChildren(...[
+        h('p', { class: 'muted small', text: t('breed.pedigree') }),
+        h('div', { class: 'peds' }, sp ? ped(sp) : null, dp ? ped(dp) : null),
+        pv.ok
+          ? h('p', {}, `${t('breed.F')}: ${(pv.F * 100).toFixed(2)}% `, h('span', { class: `badge risk-${pv.risk}`, text: t(`breed.risk.${pv.risk}`) }), h('br'), t('breed.gestation', { n: pv.gestationDays }))
+          : h('p', { class: 'warn', text: t(`err.${pv.error}`) }),
+        sim.freePlaces(S()) ? null : h('p', { class: 'warn', text: t('breed.fullWarn') })].filter(Boolean));
       go.disabled = !pv.ok || S().ap < sim.rules.ap.breed;
     };
     sSel.onchange = upd; dSel.onchange = upd;
@@ -152,7 +170,7 @@ export function makeScreens(app) {
         pv.replaceChildren(
           h('p', {}, `${t('feed.total', { n: Math.round(m.total) })} · ${t('feed.energy')} ${m.energy.toFixed(2)} · ${t('feed.protein')} ${m.protein.toFixed(2)} · ${t('feed.fatColor')}: `,
             h('span', { class: `badge ${fc === 'bad' ? 'bad' : fc === 'good' ? 'good' : ''}`, text: t(`feed.fatColor.${fc}`) })),
-          m.ok ? null : h('p', { class: 'warn', text: t('feed.mustBe100') }));
+          m.ok ? '' : h('p', { class: 'warn', text: t('feed.mustBe100') }));
         apply.disabled = !m.ok;
       };
       apply.onclick = () => { app.act({ type: 'setFeed', mode: 'mix', mix }); feedScreen(); };
@@ -215,7 +233,7 @@ export function makeScreens(app) {
           h('td', {}, h('span', { class: `grade g-${r.grade.replace('+', 'p')}`, text: t(`grade.${r.grade}`) })),
           h('td', { class: 'num', text: money(r.price) }))))),
       h('p', { class: 'total', text: t('report.total', { amount: money(rep.total) }) }),
-      h('blockquote', { class: 'line', text: anyOut ? t('line.report.2') : t('line.report.1', { name: nm(best), grade: t(`grade.${best.grade}`) }) }),
+      h('blockquote', { class: 'line', text: anyOut ? t('line.report.2') : t('line.report.1', { name: nm(best), grade: t(`gradeLong.${best.grade}`) }) }),
       h('p', { class: 'muted small', text: t('report.brandNote') }));
     openModal({ title: t('report.title'), body, wide: true, onClose, closeLabel: t('close') });
   }
@@ -247,6 +265,7 @@ export function makeScreens(app) {
         h('dl', { class: 'kv' },
           h('dt', { text: t('creditor.balance') }), h('dd', { class: 'num', text: money(di.balance) }),
           h('dt', { text: t('creditor.due') }), h('dd', { class: 'num', text: `${money(di.minPayment)} · ${t('date.seasonDay', { season: t(`season.${d.season}`), day: d.dayOfSeason })} (D-${di.daysLeft})` }),
+          di.arrears ? [h('dt', { text: t('creditor.arrears') }), h('dd', { class: 'num warn', text: money(di.arrears) })] : null,
           h('dt', { text: t('creditor.paid') }), h('dd', { class: 'num', text: money(di.paid) })),
         di.missed ? h('p', { class: 'warn', text: t('creditor.missed', { n: di.missed }) }) : null,
         h('div', { class: 'actions' },
@@ -256,7 +275,7 @@ export function makeScreens(app) {
     } else {
       content = h('div', {}, h('p', { class: 'muted', text: t('auction.soon') }),
         sim.BREED_IDS.map((b) => h('div', { class: 'shoprow' }, h('span', { class: 'grow', text: t('auction.buyPiglet', { breed: breedName(b), price: fmtNum(sim.rules.piglet[b]) }) }),
-          h('button', { class: 'btn small', disabled: st.cash < sim.rules.piglet[b] || st.pigs.length >= sim.rules.pigCap, onclick: () => { app.act({ type: 'buyPiglet', breed: b }); town('auction'); } }, t('confirm')))));
+          h('button', { class: 'btn small', disabled: st.cash < sim.rules.piglet[b] || !sim.freePlaces(st), onclick: () => { app.act({ type: 'buyPiglet', breed: b }); town('auction'); } }, t('confirm')))));
     }
     let line = tab === 'auction' ? null : pick(lines[tab]);
     if (tab === 'creditor' && justPaid && !di.remaining) line = 'line.creditor.3';
@@ -274,12 +293,12 @@ export function makeScreens(app) {
 
   // ---------- save menu ----------
   function saveMenu() {
-    const file = h('input', { type: 'file', accept: '.json,application/json', class: 'visually-hidden', id: 'importfile',
+    const file = h('input', { type: 'file', accept: '.json,application/json', class: 'visually-hidden', id: 'importfile', 'data-testid': 'import-file',
       onchange: async (e) => { const f = e.target.files[0]; if (f) app.importText(await f.text()); } });
     openModal({ title: t('save.title'), closeLabel: t('close'), body: h('div', { class: 'menu-list' },
       h('button', { class: 'btn', onclick: () => app.save(true) }, t('save.save')),
-      h('button', { class: 'btn', onclick: () => app.exportFile() }, t('save.export')),
-      h('button', { class: 'btn', onclick: () => file.click() }, t('save.import')), file,
+      h('button', { class: 'btn', 'data-testid': 'export-save', onclick: () => app.exportFile() }, t('save.export')),
+      h('button', { class: 'btn', 'data-testid': 'import-save', onclick: () => file.click() }, t('save.import')), file,
       h('button', { class: 'btn danger', onclick: () => { if (confirm(t('save.newConfirm'))) app.newGame(); } }, t('save.new')),
       h('p', { class: 'muted small', text: t('save.auto') })) });
   }

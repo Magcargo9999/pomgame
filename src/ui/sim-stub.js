@@ -20,8 +20,10 @@ export const rules = Object.freeze({
   pigCap: 30,
   seasonDays: 28,
   yearDays: 112,
-  penCapacity: 8,
+  // ruling O2: start with 2 pens x 4 places; the T1 piggery (not in this stub) opens the rest
+  penCapacity: { A: 4, B: 4, C: 0, D: 0 },
   pens: ['A', 'B', 'C', 'D'],
+  weanedPigletPrice: 60000,
   ap: { feed: 2, feedPen: 1, clean: 2, pet: 1, vetCheck: 1, breed: 2, ship: 3 },
   cost: { vetCheck: 30000, vetVisit: 80000, mixer: 500000 },
   feedPrice: { starter: 800, grower: 600, finisher: 550, corn: 400, barley: 420, soy: 700, scraps: 150, vitE: 5000 },
@@ -31,7 +33,8 @@ export const rules = Object.freeze({
   shipMinAge: 25,
   breedMinAge: 30,
   gestationDays: 25,
-  debt: { start: 30000000, interest: 0.03, minPayment: [600000, 1500000, 3000000, 4000000], missedLimit: 3 },
+  // ruling O3: every minimum payment exceeds the season's interest (real numbers: data/economy.json)
+  debt: { start: 30000000, interest: 0.015, minPayment: [600000, 1500000, 3000000, 4000000], missedLimit: 3 },
 });
 
 const FEEDS = {
@@ -111,19 +114,22 @@ function weightForAge(a) {
   return 160;
 }
 function leastFullPen(state) {
-  let best = rules.pens[0], n = Infinity;
+  let best = rules.pens[0], free = -1;
   for (const p of rules.pens) {
-    const c = state.pigs.filter((x) => x.penId === p).length;
-    if (c < n) { n = c; best = p; }
+    const f = penCapacity(state, p) - state.pigs.filter((x) => x.penId === p).length;
+    if (f > free) { free = f; best = p; }
   }
   return best;
 }
+export const penCapacity = (state, penId) => (state.penCapacity || rules.penCapacity)[penId] || 0;
+export const capacity = (state) => Math.min(rules.pigCap, rules.pens.reduce((s, p) => s + penCapacity(state, p), 0));
+export const freePlaces = (state) => Math.max(0, capacity(state) - state.pigs.length);
 
 export function newGame({ seed = 12345 } = {}) {
   const state = {
     sim: SIM_API, seed, rng: seed >>> 0, day: 1, ap: rules.apMax, cash: 300000,
-    debt: { balance: rules.debt.start, paidThisSeason: 0, missed: 0 },
-    pigs: [], nextId: 0,
+    debt: { balance: rules.debt.start, paidThisSeason: 0, missed: 0, arrears: 0 },
+    pigs: [], nextId: 0, penCapacity: { ...rules.penCapacity },
     pens: Object.fromEntries(rules.pens.map((p) => [p, { hygiene: 70 }])),
     feed: { mode: 'commercial', commercial: 'grower', mix: { corn: 50, barley: 25, soy: 22, scraps: 0, vitE: 3 },
       stock: { starter: 0, grower: 150, finisher: 0, corn: 0, barley: 0, soy: 0, scraps: 0, vitE: 0 } },
@@ -144,8 +150,9 @@ export function dateOf(day) {
 export function debtInfo(state) {
   const due = Math.ceil(state.day / rules.seasonDays) * rules.seasonDays;
   const year = Math.min(Math.floor((state.day - 1) / rules.yearDays), 3);
-  const min = rules.debt.minPayment[year];
-  return { balance: state.debt.balance, dueDay: due, daysLeft: due - state.day, minPayment: min,
+  // ruling O1: the amount due includes arrears; paying all of it resets the miss count
+  const min = rules.debt.minPayment[year] + (state.debt.arrears || 0);
+  return { balance: state.debt.balance, dueDay: due, daysLeft: due - state.day, minPayment: min, arrears: state.debt.arrears || 0,
     paid: state.debt.paidThisSeason, remaining: Math.max(0, min - state.debt.paidThisSeason), missed: state.debt.missed };
 }
 export function stageOf(p) {
@@ -325,7 +332,7 @@ export function act(state, a) {
     case 'buyPiglet': {
       const price = rules.piglet[a.breed];
       if (!price) return fail('unknown');
-      if (state.pigs.length >= rules.pigCap) return fail('cap', { cap: rules.pigCap });
+      if (!freePlaces(state)) return fail('cap', { cap: capacity(state) });
       if (state.cash < price) return fail('noCash');
       state.cash -= price;
       const p = makePig(state, { breed: a.breed, sex: rand(state) < 0.5 ? 'F' : 'M', ageDays: 12 });
@@ -358,7 +365,7 @@ export function gradeCarcass(c) {
   const g2 = q >= 11 ? 3 : q >= 8 ? 2 : 1;
   let g = Math.min(g1, g2);
   if (c.PSE || c.DFD) g = Math.max(0, g - 2);
-  if (g === 3 && c.imf >= 4.0 && c.fatColor <= 1 && !c.PSE) return 'brand';
+  if (g === 3 && c.imf >= 4.0 && c.fatColor <= 1 && !c.PSE && !c.DFD) return 'brand'; // ruling O4
   return ['out', '2', '1', '1+'][g];
 }
 export const GRADE_MULT = { brand: 1.45, '1+': 1.15, '1': 1.0, '2': 0.85, out: 0.6 };
@@ -438,18 +445,21 @@ export function endDay(state) {
   for (const dam of newborn) {
     const sire = findPig(state, dam.pregnancy.sire) || { genome: dam.genome, breed: dam.breed, id: dam.pregnancy.sire };
     const litter = 6 + Math.floor(rand(state) * 5);
-    const room = rules.pigCap - state.pigs.length;
-    const n = Math.max(0, Math.min(litter, room));
+    const n = Math.min(litter, freePlaces(state));
     for (let i = 0; i < n; i++) {
       const pick = (pair) => pair[rand(state) < 0.5 ? 0 : 1];
       const genome = {};
       for (const k of ['KIT', 'MC1R', 'RYR1']) genome[k] = [pick(sire.genome[k]), pick(dam.genome[k])];
       const breed = sire.breed === dam.breed ? dam.breed : 'cross';
-      const kid = makePig(state, { breed, sex: rand(state) < 0.5 ? 'F' : 'M', ageDays: 0, sire: sire.id, dam: dam.id, genome, penId: dam.penId });
+      const kid = makePig(state, { breed, sex: rand(state) < 0.5 ? 'F' : 'M', ageDays: 0, sire: sire.id, dam: dam.id, genome });
       kid.F = dam.pregnancy.F;
     }
-    events.push({ type: 'born', pigId: dam.id, n });
-    if (n < litter) events.push({ type: 'bornCapped', n: litter - n });
+    events.push({ type: 'born', pigId: dam.id, n: litter });
+    if (n < litter) { // ruling O2: extras go to the feed dealer at the weaned-piglet price
+      const sold = litter - n, amount = sold * rules.weanedPigletPrice;
+      state.cash += amount;
+      events.push({ type: 'bornSold', n: sold, amount });
+    }
     dam.pregnancy = null;
   }
 
@@ -457,9 +467,11 @@ export function endDay(state) {
   if (today % rules.seasonDays === 0) {
     const info = debtInfo(state);
     const interest = Math.round(state.debt.balance * rules.debt.interest);
+    // ruling O1: partial payment counts as missed; misses are consecutive; full payment resets
     const missed = state.debt.paidThisSeason < info.minPayment && state.debt.balance > 0;
     state.debt.balance += missed ? interest * 2 : interest;
-    if (missed) state.debt.missed++;
+    if (missed) { state.debt.missed++; state.debt.arrears = info.minPayment - state.debt.paidThisSeason; }
+    else { state.debt.missed = 0; state.debt.arrears = 0; }
     events.push(missed ? { type: 'debtMissed', n: state.debt.missed, interest: interest * 2 } : { type: 'debtOk', interest });
     state.debt.paidThisSeason = 0;
     if (state.debt.missed >= rules.debt.missedLimit) { state.over = 'foreclosed'; events.push({ type: 'foreclosed' }); }

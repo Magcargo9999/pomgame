@@ -53,3 +53,68 @@ test('grade function follows GDD 1.1 with the farm brand on top', () => {
   assert.equal(sim.gradeCarcass({ ...base, carcassKg: 99 }), '2');
   assert.equal(sim.gradeCarcass({ ...base, PSE: true }), '2');
 });
+
+function endSeason(s, pay) {
+  while (s.day % sim.rules.seasonDays !== 0) sim.endDay(s);
+  if (pay) sim.act(s, { type: 'payDebt', amount: pay });
+  return sim.endDay(s).events;
+}
+
+test('ruling O1: partial payment is a miss, misses are consecutive, full payment with arrears resets', () => {
+  const s = sim.newGame({ seed: 2 });
+  s.cash = 1e9;
+  assert.ok(endSeason(s, 100000).some((e) => e.type === 'debtMissed'));
+  assert.equal(s.debt.missed, 1);
+  const due = sim.debtInfo(s);
+  assert.equal(due.minPayment, sim.rules.debt.minPayment[0] + 500000, 'arrears added to the next amount due');
+  endSeason(s, 0);
+  assert.equal(s.debt.missed, 2);
+  endSeason(s, sim.debtInfo(s).remaining);
+  assert.equal(s.debt.missed, 0, 'full payment resets the count');
+  assert.equal(s.over, null);
+});
+
+test('ruling O1: three consecutive misses foreclose', () => {
+  const s = sim.newGame({ seed: 2 });
+  endSeason(s, 0); endSeason(s, 0);
+  assert.ok(endSeason(s, 0).some((e) => e.type === 'foreclosed'));
+  assert.equal(s.over, 'foreclosed');
+});
+
+test('ruling O3: an on-time minimum payment always lowers the balance', () => {
+  const s = sim.newGame({ seed: 4 });
+  s.cash = 1e9;
+  const before = s.debt.balance;
+  endSeason(s, sim.debtInfo(s).remaining);
+  assert.ok(s.debt.balance < before);
+});
+
+test('ruling O2: 8 places at start, buying blocked when full, extra piglets sold at birth', () => {
+  const s = sim.newGame({ seed: 5 });
+  s.cash = 1e9;
+  assert.equal(sim.capacity(s), 8);
+  for (let i = 0; i < 6; i++) assert.equal(sim.act(s, { type: 'buyPiglet', breed: 'duroc' }).ok, true);
+  assert.equal(sim.act(s, { type: 'buyPiglet', breed: 'duroc' }).error, 'cap');
+  const [dam, sire] = s.pigs;
+  dam.ageDays = 40; sire.ageDays = 40;
+  assert.equal(sim.act(s, { type: 'breed', sireId: sire.id, damId: dam.id }).ok, true, 'breeding allowed when full');
+
+  let ev = [];
+  for (let i = 0; i < sim.rules.gestationDays + 1 && !ev.some((e) => e.type === 'born'); i++) {
+    s.feed.stock.grower = 999; s.ap = sim.rules.apMax;
+    sim.act(s, { type: 'feed' });
+    ev = sim.endDay(s).events;
+  }
+  const sold = ev.find((e) => e.type === 'bornSold');
+  assert.ok(sold && sold.n >= 6);
+  assert.equal(sold.amount, sold.n * sim.rules.weanedPigletPrice);
+  assert.equal(s.pigs.length, 8);
+});
+
+test('ruling O5: UI code never renders genotype', async () => {
+  const { readFileSync } = await import('node:fs');
+  for (const f of ['screens.js', 'main.js', 'world.js']) {
+    const src = readFileSync(new URL(`../../src/ui/${f}`, import.meta.url), 'utf8');
+    assert.ok(!/\.genome\b/.test(src), `${f} reads pig.genome`);
+  }
+});
