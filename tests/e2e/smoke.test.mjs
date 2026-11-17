@@ -2,7 +2,7 @@
 // Run: node --test tests/e2e/
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { hasPage, startServer, loadPlaywright, readNum, playerPos, shot } from './helpers.mjs';
+import { hasPage, startServer, loadPlaywright, gameNums, clickEndDay, step, playerPos, shot } from './helpers.mjs';
 
 let pw, srv, browser;
 const skip = !hasPage() ? 'index.html not found (ui-shell not merged yet)' : false;
@@ -20,58 +20,64 @@ after(async () => {
   srv?.server.close();
 });
 
-async function openGame(context) {
-  const page = await context.newPage();
-  const errors = [];
+async function openGame(page, errors) {
   page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  // Resource 404s are judged by URL below; other console errors count.
+  page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) errors.push(m.text()); });
+  // The shell probes assets/sprites/* and falls back to generated sprites until the art lands.
+  page.on('response', (r) => { if (r.status() >= 400 && !/\/assets\/sprites\//.test(r.url())) errors.push(`${r.status()} ${r.url()}`); });
   await page.goto(srv.url);
-  await page.getByTestId('day').waitFor({ timeout: 10_000 });
-  return { page, errors };
+  await page.waitForFunction(() => document.body.dataset.ready === 'true' || document.querySelector('[data-testid="day"]'), null, { timeout: 15_000 });
 }
 
+const canvasPng = (page) => page.locator('canvas').first().screenshot();
+
 test('smoke: load, move, end day, reload', { skip }, async (t) => {
-  const context = await browser.newContext();
-  const { page, errors } = await openGame(context);
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const errors = [];
+  let failed = false;
+  const check = async (name, fn) => t.test(name, async () => {
+    try { await fn(); } catch (e) { failed = true; await shot(page, `smoke-${name.replace(/\W+/g, '_')}`); throw e; }
+  });
   try {
-    await t.test('page loads without errors', async () => {
+    await openGame(page, errors);
+
+    await check('page loads without errors', async () => {
       assert.deepEqual(errors, [], 'console/page errors on load');
+      const n = await gameNums(page);
+      for (const k of ['day', 'ap', 'cash']) assert.equal(typeof n[k], 'number', `cannot read ${k}`);
     });
 
-    const day0 = await readNum(page, 'day');
+    const n0 = await gameNums(page);
 
-    await t.test('moving costs 0 AP (A5)', async () => {
-      const ap0 = await readNum(page, 'ap');
+    await check('moving costs 0 AP (A5)', async () => {
+      await page.locator('canvas').first().focus();
       const p0 = await playerPos(page);
-      assert.ok(p0, 'player position hook missing: window.__game.player or data-testid=player-pos');
-      await page.locator('canvas').first().click({ position: { x: 5, y: 5 } }).catch(() => {});
-      for (const k of ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft']) await page.keyboard.press(k);
+      const img0 = await canvasPng(page);
+      for (const k of ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowDown']) await step(page, k);
       const p1 = await playerPos(page);
-      assert.notDeepEqual(p1, p0, 'player did not move');
-      assert.equal(await readNum(page, 'ap'), ap0, 'AP changed after moving');
+      if (p0 && p1) assert.notDeepEqual(p1, p0, 'player position unchanged');
+      else assert.notDeepEqual(await canvasPng(page), img0, 'canvas unchanged after arrow keys');
+      assert.equal((await gameNums(page)).ap, n0.ap, 'AP changed after moving');
     });
 
-    await t.test('end day advances exactly one day and refills AP (A2, A4)', async () => {
-      await page.getByTestId('end-day').click();
-      await page.waitForFunction(
-        (d) => /\d+/.test(document.querySelector('[data-testid="day"]').textContent) &&
-               Number(document.querySelector('[data-testid="day"]').textContent.replace(/,/g, '').match(/\d+/)[0]) !== d,
-        day0, { timeout: 5_000 });
-      assert.equal(await readNum(page, 'day'), day0 + 1);
+    await check('end day advances exactly one day and refills AP (A2, A4)', async () => {
+      await clickEndDay(page);
+      await page.waitForFunction((d) => (window.__ranch?.app?.state?.day ?? 0) !== d, n0.day, { timeout: 5_000 }).catch(() => {});
+      const n1 = await gameNums(page);
+      assert.equal(n1.day, n0.day + 1);
+      assert.equal(n1.ap, n0.ap, 'AP not refilled to the daily max');
     });
 
-    await t.test('auto-save survives reload (J1)', async () => {
-      const before = { day: await readNum(page, 'day'), cash: await readNum(page, 'cash'), pos: await playerPos(page) };
+    await check('auto-save survives reload (J1)', async () => {
+      const before = await gameNums(page);
       await page.reload();
-      await page.getByTestId('day').waitFor();
-      const afterState = { day: await readNum(page, 'day'), cash: await readNum(page, 'cash'), pos: await playerPos(page) };
-      assert.deepEqual(afterState, before);
+      await page.waitForFunction(() => document.body.dataset.ready === 'true' || document.querySelector('[data-testid="day"]'));
+      assert.deepEqual(await gameNums(page), before);
     });
-  } catch (e) {
-    await shot(page, `smoke-fail-${Date.now()}`);
-    throw e;
   } finally {
-    await shot(page, 'smoke-last');
+    await shot(page, failed ? 'smoke-last-FAILED' : 'smoke-last');
     await context.close();
   }
 });

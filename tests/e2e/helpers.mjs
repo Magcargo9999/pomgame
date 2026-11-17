@@ -62,8 +62,42 @@ export async function readNum(page, id) {
   return Number(m[0]);
 }
 
+// Game numbers. Prefers data-testid text; falls back to the shell's debug hook
+// window.__ranch.app.state (works for both the sim stub and the real sim).
+export async function gameNums(page) {
+  return page.evaluate(() => {
+    const num = (id) => {
+      const el = document.querySelector(`[data-testid="${id}"]`);
+      const m = el && el.textContent.replace(/,/g, '').match(/-?\d+/);
+      return m ? Number(m[0]) : undefined;
+    };
+    const st = window.__ranch?.app?.state ?? {};
+    const ap = typeof st.ap === 'number' ? st.ap : st.ap?.left;
+    return {
+      day: num('day') ?? st.day,
+      ap: num('ap') ?? ap,
+      cash: num('cash') ?? st.cash,
+    };
+  });
+}
+
+export async function clickEndDay(page) {
+  const byId = page.getByTestId('end-day');
+  if (await byId.count()) await byId.click(); else await page.locator('#btn-end').click();
+}
+
+// Hold an arrow key long enough for the world's update loop to take a step.
+export async function step(page, key, ms = 180) {
+  await page.keyboard.down(key);
+  await page.waitForTimeout(ms);
+  await page.keyboard.up(key);
+  await page.waitForTimeout(200);
+}
+
 export async function playerPos(page) {
   return page.evaluate(() => {
+    const w = window.__ranch?.world;
+    if (w?.player) return { x: w.player.tx ?? w.player.x, y: w.player.ty ?? w.player.y };
     const p = window.__game && window.__game.player;
     if (p) return { x: p.x, y: p.y };
     const el = document.querySelector('[data-testid="player-pos"]');
