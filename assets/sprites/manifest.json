@@ -77,5 +77,12 @@
     "fence_gate_open_left": "tiles/fence_gate_open_left.png",
     "fence_gate_open_right": "tiles/fence_gate_open_right.png",
     "pen_sign": "tiles/pen_sign.png"
+  },
+  "faces": {
+    "creditor": "faces/npc_creditor_face.png",
+    "vet": "faces/npc_vet_face.png",
+    "feed": "faces/npc_feed_face.png",
+    "auction": "faces/npc_auction_face.png",
+    "worker": "faces/npc_worker_face.png"
   }
 }
