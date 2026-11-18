@@ -1,14 +1,15 @@
 // Canvas world: farm background, player (keyboard, grid steps) and pigs
-// wandering in their pens. Canvas is drawn at 1 logical px and scaled by an
-// integer factor with image-rendering: pixelated.
-import { TILE, MAP_W, MAP_H, START, walkable, objectAt, penFloor, fitScale, camera } from './map.js';
+// wandering in their pens. Drawn at 1 logical px, scaled by an integer factor
+// with image-rendering: pixelated. Reads only the sim's View (getView).
+import { TILE, MAP_W, MAP_H, START, PENS, PEN_SIZE, walkable, objectAt, penFloor, fitScale, camera } from './map.js';
 import { drawBackground } from './tiles.js';
 import { makePigSheets, makePlayerSheet, recolorPixels, slotMap, CELL, ANCHOR, PLAYER_CELL, PLAYER_ANCHOR, sheetMeta } from './sprites.js';
-import { rampsFor, lookKey } from './palettes.js';
+import { rampsFor, lookKey, layerFor } from './palettes.js';
 
 const STEP_MS = 130;
 const KEYS = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
 const DV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+export const isPiglet = (pig) => pig.stage === 'suckling' || pig.stage === 'nursery';
 
 function bufToCanvas(buf) {
   const c = document.createElement('canvas');
@@ -25,26 +26,30 @@ async function loadImage(url) {
 function canvasPixels(src) {
   const c = document.createElement('canvas');
   c.width = src.width; c.height = src.height;
-  const x = c.getContext('2d');
+  const x = c.getContext('2d', { willReadFrequently: true });
   x.drawImage(src, 0, 0);
   return { c, x, d: x.getImageData(0, 0, c.width, c.height) };
 }
 
-// Real sheets (assets/sprites/pig/<name>.png + .json + .<pattern>.png) win
-// over the generated placeholders when they exist.
-async function loadPigSheet(name, scale) {
-  try {
-    const meta = await (await fetch(`./assets/sprites/pig/${name}.json`)).json();
-    const base = await loadImage(`./assets/sprites/pig/${name}.png`);
-    const layers = {};
-    for (const p of ['belt', 'spots', 'points']) {
-      try { layers[p] = await loadImage(`./assets/sprites/pig/${name}.${p}.png`); } catch { /* optional layer */ }
-    }
-    return { meta, base, layers, real: true };
-  } catch {
-    const g = makePigSheets(scale);
-    return { meta: g.meta, base: bufToCanvas(g.base), layers: Object.fromEntries(Object.entries(g.layers).map(([k, v]) => [k, bufToCanvas(v)])), real: false };
+// Real sheets are listed in assets/sprites/manifest.json:
+//   "pig": { "adult": { "sheet": "pig/pig_adult.png", "meta": "pig/pig_adult.json",
+//            "layers": { "belt": "pig/pig_adult.belt.png", "spots": ..., "points": ... } } }
+// Anything not listed (or failing to load) falls back to the code-drawn placeholder.
+async function loadManifest() {
+  try { return await (await fetch('./assets/sprites/manifest.json')).json(); } catch { return {}; }
+}
+async function loadPigSheet(entry, scale) {
+  if (entry && entry.sheet && entry.meta) {
+    try {
+      const meta = await (await fetch(`./assets/sprites/${entry.meta}`)).json();
+      const base = await loadImage(`./assets/sprites/${entry.sheet}`);
+      const layers = {};
+      for (const [k, path] of Object.entries(entry.layers || {})) layers[k] = await loadImage(`./assets/sprites/${path}`);
+      return { meta, base, layers, real: true };
+    } catch (err) { console.warn('sprite fallback:', entry.sheet, err.message); }
   }
+  const g = makePigSheets(scale);
+  return { meta: g.meta, base: bufToCanvas(g.base), layers: Object.fromEntries(Object.entries(g.layers).map(([k, v]) => [k, bufToCanvas(v)])), real: false };
 }
 
 export async function createWorld(canvas, { onInteract, isBlocked }) {
@@ -52,22 +57,23 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
   const bg = document.createElement('canvas');
   bg.width = MAP_W * TILE; bg.height = MAP_H * TILE;
   drawBackground(bg.getContext('2d'));
-  const sheets = { adult: await loadPigSheet('pig_adult', 1), piglet: await loadPigSheet('pig_piglet', 0.6) };
-  const player = { tx: START.x, ty: START.y, fx: START.x, fy: START.y, dir: 'down', moving: null, frame: 0, walkT: 0 };
+  const manifest = await loadManifest();
+  const sheets = { adult: await loadPigSheet(manifest.pig?.adult, 1), piglet: await loadPigSheet(manifest.pig?.piglet, 0.6) };
+  const player = { tx: START.x, ty: START.y, fx: START.x, fy: START.y, dir: 'down', moving: null, walkT: 0 };
   const playerSheet = bufToCanvas(makePlayerSheet());
   const held = [];
   const actors = new Map();
   const tinted = new Map();
-  let state = null, scale = 1, cam = { x: 0, y: 0 }, last = performance.now(), dirty = true;
+  let view = null, slotOf = new Map(), scale = 1, cam = { x: 0, y: 0 }, last = performance.now();
 
   function tintedSheet(kind, look) {
     const key = `${kind}|${lookKey(look)}`;
     if (tinted.has(key)) return tinted.get(key);
-    const sh = sheets[kind], ramps = rampsFor(look), map = slotMap(ramps);
+    const sh = sheets[kind], map = slotMap(rampsFor(look));
     const { c, x, d } = canvasPixels(sh.base);
     recolorPixels(d.data, map);
     x.putImageData(d, 0, 0);
-    const layer = sh.layers[look.pattern];
+    const layer = sh.layers[layerFor(look.pattern)];
     if (layer) {
       const L = canvasPixels(layer);
       recolorPixels(L.d.data, map);
@@ -78,18 +84,21 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     return c;
   }
 
-  function rndIn(penId) {
-    const f = penFloor(penId);
+  function rndIn(slot) {
+    const f = penFloor(slot);
     return { x: f.x0 + 10 + Math.random() * (f.x1 - f.x0 - 20), y: f.y0 + 18 + Math.random() * (f.y1 - f.y0 - 22) };
   }
   function syncActors() {
+    slotOf = new Map(view.pens.map((p, i) => [p.id, Math.min(i, PENS.length - 1)]));
     const seen = new Set();
-    for (const p of state.pigs) {
+    for (const p of view.pigs) {
+      if (p.shipQueued) continue;
       seen.add(p.id);
+      const slot = slotOf.get(p.penId) ?? 0;
       let a = actors.get(p.id);
-      if (!a || a.penId !== p.penId) {
-        const pos = rndIn(p.penId);
-        a = { id: p.id, penId: p.penId, x: pos.x, y: pos.y, dir: 'down', flip: false, anim: 'idle', t: Math.random() * 1000, wait: Math.random() * 2000, target: null };
+      if (!a || a.slot !== slot) {
+        const pos = rndIn(slot);
+        a = { id: p.id, slot, x: pos.x, y: pos.y, dir: 'down', flip: false, anim: 'idle', t: Math.random() * 1000, wait: Math.random() * 2000, target: null };
         actors.set(p.id, a);
       }
       a.pig = p;
@@ -113,8 +122,8 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     a.wait -= dt;
     if (a.wait <= 0) {
       const roll = Math.random();
-      if (roll < 0.55) { a.target = rndIn(a.penId); }
-      else { a.anim = roll < 0.75 ? 'eat' : roll < 0.85 && !a.pig.sick ? 'sleep' : 'idle'; a.wait = 1500 + Math.random() * 3000; }
+      if (roll < 0.55) a.target = rndIn(a.slot);
+      else { a.anim = roll < 0.75 ? 'eat' : roll < 0.85 ? 'sleep' : 'idle'; a.wait = 1500 + Math.random() * 3000; }
     } else if (a.anim === 'walk') a.anim = 'idle';
   }
 
@@ -134,19 +143,24 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
       player.fx = player.moving.from[0] + (player.moving.to[0] - player.moving.from[0]) * k;
       player.fy = player.moving.from[1] + (player.moving.to[1] - player.moving.from[1]) * k;
       if (k >= 1) player.moving = null;
-      dirty = true;
     }
     if (!player.moving) {
       const dir = held[held.length - 1];
-      if (dir && !isBlocked()) tryMove(dir) || (dirty = true);
+      if (dir && !isBlocked()) tryMove(dir);
       else player.walkT = 0;
     }
   }
 
+  // targets handed to onInteract: {kind:'pig', pigId} | {kind:'pen', penId|null, slot} | {kind:'house'|'shed'|'dock'|'gate'}
+  function resolve(o) {
+    if (!o) return null;
+    if (o.kind === 'pen') return { kind: 'pen', slot: o.slot, penId: view?.pens[o.slot]?.id ?? null };
+    return o;
+  }
   function pigAtWorld(wx, wy, pad = 0) {
     let best = null;
     for (const a of actors.values()) {
-      const small = a.pig.ageDays < 13, hw = (small ? 8 : 13) + pad, top = (small ? 12 : 18) + pad;
+      const small = isPiglet(a.pig), hw = (small ? 8 : 13) + pad, top = (small ? 12 : 18) + pad;
       if (wx >= a.x - hw && wx <= a.x + hw && wy >= a.y - top && wy <= a.y + 2 + pad) if (!best || a.y > best.y) best = a;
     }
     return best;
@@ -165,7 +179,7 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     const a = pigAtWorld(cx, cy + 6, 8);
     const pos = screenOf(cx, cy);
     if (a) { a.happyUntil = a.t + 360; return onInteract({ kind: 'pig', pigId: a.id }, pos); }
-    const o = objectAt(fx, fy) || objectAt(player.tx, player.ty);
+    const o = resolve(objectAt(fx, fy) || objectAt(player.tx, player.ty));
     if (o) onInteract(o, pos);
   }
 
@@ -190,19 +204,21 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', () => { held.length = 0; });
+  const toWorld = (e) => {
+    const r = canvas.getBoundingClientRect(), k = canvas.width / r.width;
+    return [(e.clientX - r.left) * k + cam.x, (e.clientY - r.top) * k + cam.y];
+  };
   canvas.addEventListener('click', (e) => {
     if (isBlocked()) return;
-    const r = canvas.getBoundingClientRect(), k = canvas.width / r.width;
-    const wx = (e.clientX - r.left) * k + cam.x, wy = (e.clientY - r.top) * k + cam.y;
+    const [wx, wy] = toWorld(e);
     const a = pigAtWorld(wx, wy);
     const pos = { x: e.clientX, y: e.clientY };
     if (a) { a.happyUntil = a.t + 360; return onInteract({ kind: 'pig', pigId: a.id }, pos); }
-    const o = objectAt(Math.floor(wx / TILE), Math.floor(wy / TILE));
+    const o = resolve(objectAt(Math.floor(wx / TILE), Math.floor(wy / TILE)));
     if (o) onInteract(o, pos);
   });
   canvas.addEventListener('mousemove', (e) => {
-    const r = canvas.getBoundingClientRect(), k = canvas.width / r.width;
-    const wx = (e.clientX - r.left) * k + cam.x, wy = (e.clientY - r.top) * k + cam.y;
+    const [wx, wy] = toWorld(e);
     canvas.style.cursor = pigAtWorld(wx, wy) || objectAt(Math.floor(wx / TILE), Math.floor(wy / TILE)) ? 'pointer' : 'default';
   });
 
@@ -213,18 +229,18 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     canvas.height = Math.max(1, Math.floor((host.height * dpr) / scale));
     canvas.style.width = `${(canvas.width * scale) / dpr}px`;
     canvas.style.height = `${(canvas.height * scale) / dpr}px`;
-    dirty = true;
   }
   new ResizeObserver(resize).observe(canvas.parentElement);
   resize();
 
   const meta = sheetMeta();
   function drawPig(a) {
-    const kind = a.pig.ageDays < 13 ? 'piglet' : 'adult';
-    const sh = tintedSheet(kind, a.pig.look);
-    const an = sheets[kind].meta.anims[`${a.anim}_${a.dir}`] || meta.anims[`${a.anim}_${a.dir}`];
+    const kind = isPiglet(a.pig) ? 'piglet' : 'adult';
+    const sh = tintedSheet(kind, a.pig.appearance);
+    const m = sheets[kind].meta;
+    const an = m.anims[`${a.anim}_${a.dir}`] || meta.anims[`${a.anim}_${a.dir}`];
     const f = Math.floor(a.t / an.ms) % an.frames;
-    const [cw, ch] = sheets[kind].meta.cell || [CELL, CELL], [ax, ay] = sheets[kind].meta.anchor || ANCHOR;
+    const [cw, ch] = m.cell || [CELL, CELL], [ax, ay] = m.anchor || ANCHOR;
     const x = Math.round(a.x) - cam.x, y = Math.round(a.y) - cam.y;
     ctx.fillStyle = 'rgba(40,30,20,0.25)';
     ctx.fillRect(x - 9, y - 1, 18, 2);
@@ -234,7 +250,14 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
       ctx.restore();
     } else ctx.drawImage(sh, f * cw, an.row * ch, cw, ch, x - ax, y - ay, cw, ch);
     if (a.anim === 'sleep') { ctx.fillStyle = '#ffffff'; ctx.font = '8px monospace'; ctx.fillText('z', x + 8, y - 18 - (Math.floor(a.t / 600) % 2) * 2); }
-    if (a.pig.sick) { ctx.fillStyle = '#e04a4a'; ctx.fillRect(x - 1, y - 30, 2, 5); ctx.fillRect(x - 1, y - 24, 2, 2); }
+    if (a.pig.condition === 'sick') { ctx.fillStyle = '#e04a4a'; ctx.fillRect(x - 1, y - 30, 2, 5); ctx.fillRect(x - 1, y - 24, 2, 2); }
+  }
+  function drawLockedPens() {
+    for (const p of PENS) {
+      if (view && view.pens[p.slot]) continue;
+      ctx.fillStyle = 'rgba(30, 24, 18, 0.45)';
+      ctx.fillRect((p.x + 1) * TILE - cam.x, (p.y + 1) * TILE - cam.y, (PEN_SIZE - 2) * TILE, (PEN_SIZE - 2) * TILE);
+    }
   }
   function drawPlayer() {
     const [W, H] = PLAYER_CELL, row = { down: 0, up: 1, right: 2, left: 2 }[player.dir];
@@ -266,20 +289,21 @@ export async function createWorld(canvas, { onInteract, isBlocked }) {
     ctx.fillStyle = '#2f5e30';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bg, -cam.x, -cam.y);
+    drawLockedPens();
     const drawList = [...actors.values()].map((a) => ({ y: a.y, fn: () => drawPig(a) }));
     drawList.push({ y: player.fy * TILE + 15, fn: drawPlayer });
     drawList.sort((p, q) => p.y - q.y).forEach((d) => d.fn());
     drawFocus();
-    dirty = false;
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
   return {
-    setState(s) { state = s; syncActors(); dirty = true; },
+    setView(v) { view = v; syncActors(); },
     cheer(pigId) { const a = actors.get(pigId); if (a) a.happyUntil = a.t + 360; },
     resize,
     playerPos() { return { x: player.tx, y: player.ty, dir: player.dir }; },
-    get usingRealSprites() { return sheets.adult.real; },
+    get player() { return { tx: player.tx, ty: player.ty, x: player.tx, y: player.ty, dir: player.dir }; },
+    get usingRealSprites() { return { adult: sheets.adult.real, piglet: sheets.piglet.real }; },
   };
 }

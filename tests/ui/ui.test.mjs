@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { makePigSheets, makePlayerSheet, sheetMeta, recolorPixels, slotMap, MARKERS, SHEET_W, SHEET_H, ANCHOR, ANIMS, DIRS, CELL } from '../../src/ui/sprites.js';
 import { MAP_W, MAP_H, START, GATE, PENS, BUILDINGS, walkable, objectAt, fitScale, camera } from '../../src/ui/map.js';
-import { rampsFor } from '../../src/ui/palettes.js';
+import { rampsFor, layerFor } from '../../src/ui/palettes.js';
 import { setStrings, t } from '../../src/ui/i18n.js';
 
 const root = new URL('../../', import.meta.url);
@@ -69,10 +69,10 @@ test('map: start, gate, every pen and building door reachable on foot', () => {
     }
   }
   assert.ok(seen.has(`${GATE.x},${GATE.y}`));
-  for (const p of PENS) assert.ok(seen.has(`${p.x + 2},${p.y + 1}`), `pen ${p.id} floor`);
+  for (const p of PENS) assert.ok(seen.has(`${p.x + 2},${p.y + 1}`), `pen slot ${p.slot} floor`);
   for (const b of BUILDINGS) assert.ok(seen.has(`${b.x + Math.floor(b.w / 2)},${b.y + b.h}`), `${b.id} door`);
   assert.equal(objectAt(GATE.x, GATE.y).kind, 'gate');
-  assert.equal(objectAt(PENS[0].x, PENS[0].y).penId, 'A');
+  assert.equal(objectAt(PENS[0].x, PENS[0].y).slot, 0);
 });
 
 test('integer scale: whole farm at 1280x720, follow camera in a small window', () => {
@@ -113,4 +113,37 @@ test('ko.json holds the 10 tone sample lines', () => {
   const lines = Object.keys(ko).filter((k) => k.startsWith('line.'));
   assert.equal(lines.length, 10);
   for (const who of ['creditor', 'vet', 'feed', 'report']) assert.ok(lines.some((k) => k.startsWith(`line.${who}.`)));
+});
+
+test('every sim code the UI shows has a Korean string (events, errors, items, breeds, workers, stages)', () => {
+  const simDir = new URL('src/sim/', root);
+  const src = readdirSync(simDir).filter((f) => f.endsWith('.js')).map((f) => readFileSync(new URL(f, simDir), 'utf8')).join('\n');
+  const need = new Set();
+  for (const m of src.matchAll(/\bev\('([a-zA-Z]+)'/g)) need.add(`event.${m[1]}`);
+  for (const m of src.matchAll(/'((?:ap|cash|stock|pen|pig|herd|breed|facility|action|param|game|save)\.[a-zA-Z]+)'/g)) need.add(`error.${m[1]}`);
+  const items = JSON.parse(readFileSync(new URL('data/items.json', root), 'utf8'));
+  const breeds = JSON.parse(readFileSync(new URL('data/breeds.json', root), 'utf8'));
+  for (const id of ['piglet', 'boar', 'vaccine', ...Object.keys(items.commercialFeeds), ...Object.keys(items.ingredients), ...Object.keys(items.facilities)]) need.add(`item.${id}`);
+  for (const id of Object.keys(breeds)) need.add(`breed.${id}`);
+  for (const id of Object.keys(items.workers)) need.add(`worker.${id}`);
+  for (const id of ['suckling', 'nursery', 'grower', 'finisher', 'breeder', 'pregnant', 'lactating']) need.add(`stage.${id}`);
+  for (const id of ['brand', '1+', '1', '2', 'out']) { need.add(`grade.${id}`); need.add(`gradeLong.${id}`); }
+  const missing = [...need].filter((k) => !(k in ko));
+  assert.deepEqual(missing, []);
+});
+
+test('appearance patterns from the sim map to a sprite layer and spot colours', () => {
+  assert.equal(layerFor('none'), null);
+  assert.equal(layerFor('belt'), 'belt');
+  assert.equal(layerFor('points'), 'points');
+  for (const p of ['white_spots', 'black_spots', 'patchwork']) assert.equal(layerFor(p), 'spots');
+  assert.equal(rampsFor({ coat: 'white', pattern: 'black_spots' }).spot[0], '#5b5263');
+  assert.equal(rampsFor({ coat: 'black', pattern: 'white_spots' }).spot[0], '#f7f0ea');
+});
+
+test('ruling O5: UI never reads genotype or breeding values', () => {
+  for (const f of readdirSync(new URL('src/ui/', root))) {
+    const src = readFileSync(new URL(`src/ui/${f}`, root), 'utf8');
+    assert.ok(!/\.(genotype|genome|bv)\b/.test(src), `${f} reads hidden genetics`);
+  }
 });

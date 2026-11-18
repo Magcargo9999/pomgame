@@ -1,102 +1,164 @@
 // Boot: load strings, load or start a game, wire HUD, world and screens.
-import { loadStrings, t, list, money } from './i18n.js';
+// The sim state is opaque; every change goes through sim.doAction / sim.endDay
+// and the screen is drawn from sim.getView(state).
+import { loadStrings, t, list, money, fmtNum } from './i18n.js';
 import * as sim from './sim.js';
 import { createWorld } from './world.js';
 import { makeScreens } from './screens.js';
 import { h, isModalOpen, isPopupOpen, closePopup, closeModal, toast } from './dom.js';
 import { makePigSheets, recolorPixels, slotMap, CELL } from './sprites.js';
-import { rampsFor } from './palettes.js';
+import { rampsFor, layerFor } from './palettes.js';
 
-const SAVE_KEY = 'bitdeomi-ranch-save-v1';
+const SAVE_KEY = 'bitdeomi-ranch-save';
+const QUIET_EVENTS = new Set(['actionDone', 'dayStart']);
 
 const app = {
   state: null,
-  pigName(p) { return this.pigNameByIndex(p.nameIndex); },
-  pigNameByIndex(i) {
+  view: null,
+  names: new Map(), // pigId -> display name, kept after a pig leaves (reports, events)
+
+  // ---------- names & labels ----------
+  defaultName(id) {
     const names = list('pigNames');
-    if (!names.length) return `#${i + 1}`;
+    const i = Math.max(0, (parseInt(String(id).split('-').pop(), 10) || 1) - 1);
+    if (!names.length) return id;
     const round = Math.floor(i / names.length);
     return names[i % names.length] + (round ? ` ${round + 1}` : '');
   },
+  pigName(idOrPig) {
+    const id = typeof idOrPig === 'string' ? idOrPig : idOrPig?.id;
+    if (!id) return t('pig.unknown');
+    const p = this.view?.pigs.find((q) => q.id === id);
+    return (p && p.name) || this.names.get(id) || this.defaultName(id);
+  },
+  penName(penId) {
+    const i = this.view?.pens.findIndex((p) => p.id === penId) ?? -1;
+    return t('pen.name', { n: i >= 0 ? i + 1 : String(penId).split('-').pop() });
+  },
+  pig(id) { return this.view.pigs.find((p) => p.id === id); },
+  dateText(day) {
+    const d0 = day - 1, per = sim.config.time.daysPerSeason, seasons = sim.config.time.seasons;
+    return t('date.full', { year: Math.floor(d0 / (per * seasons)) + 1, season: t(`season.${Math.floor(d0 / per) % seasons}`), day: (d0 % per) + 1 });
+  },
+  seasonDayText(day) {
+    const d0 = day - 1, per = sim.config.time.daysPerSeason;
+    return t('date.seasonDay', { season: t(`season.${Math.floor(d0 / per) % sim.config.time.seasons}`), day: (d0 % per) + 1 });
+  },
+  itemName(itemId, breedId) {
+    return breedId ? t('auction.item', { breed: t(`breed.${breedId}`), item: t(`item.${itemId}`) }) : t(`item.${itemId}`);
+  },
+
   eventText(e) {
-    const pig = e.pigId ? sim.findPig(this.state, e.pigId) : null;
-    const nm = pig ? this.pigName(pig) : e.nameIndex != null ? this.pigNameByIndex(e.nameIndex) : '';
+    const nm = (id) => this.pigName(id);
     switch (e.type) {
-      case 'born': case 'sick': case 'petted': case 'vetOk': case 'vetCured': case 'boughtPiglet': case 'died':
-        return t(`event.${e.type}`, { name: nm, n: e.n });
-      case 'bred': {
-        const s = sim.findPig(this.state, e.sireId), d = sim.findPig(this.state, e.damId);
-        return t('event.bred', { sire: s ? this.pigName(s) : '', dam: d ? this.pigName(d) : '' });
-      }
-      case 'debtOk': case 'debtMissed': return t(`event.${e.type}`, { n: e.n, interest: money(e.interest) });
-      case 'yearEnd': return t('event.yearEnd', { balance: money(e.balance) });
-      case 'bornSold': return t('event.bornSold', { n: e.n, amount: money(e.amount) });
-      case 'paid': return t('event.paid', { amount: money(e.amount) });
-      case 'bought': return t('event.bought', { item: t(`feed.item.${e.item}`), kg: e.kg });
-      case 'cleaned': return t('event.cleaned');
+      case 'birth': return [t('event.birth', { name: nm(e.damId), n: (e.pigIds?.length || 0) + (e.soldExtra || 0) }),
+        e.stillborn ? t('event.birthStill', { n: e.stillborn }) : '',
+        e.soldExtra ? t('event.birthSold', { n: e.soldExtra, amount: money(e.extraCash || 0) }) : ''].filter(Boolean).join(' ');
+      case 'bought': return e.pigIds?.length ? t('event.boughtPigs', { item: this.itemName(e.itemId, e.breedId), n: e.pigIds.length }) : t('event.bought', { item: this.itemName(e.itemId) });
+      case 'cleaned': case 'unfed': return t(`event.${e.type}`, { pen: this.penName(e.penId) });
+      case 'fed': return t(e.partial ? 'event.fedPartial' : 'event.fed', { pen: this.penName(e.penId), kg: e.kg });
+      case 'conception': return t('event.conception', { dam: nm(e.damId), date: this.seasonDayText(e.dueDay) });
+      case 'conceptionFailed': return t('event.conceptionFailed', { dam: nm(e.damId) });
+      case 'mated': return t('event.mated', { dam: nm(e.damId), sire: nm(e.sireId), f: (e.expectedF * 100).toFixed(1) });
+      case 'debtDue': return t('event.debtDue', { paid: money(e.paid), interest: money(e.interest), balance: money(e.balance) });
+      case 'debtMissed': return t('event.debtMissed', { n: e.missed, arrears: money(e.arrears || 0) });
+      case 'debtPaid': return t('event.debtPaid', { amount: money(e.amount), balance: money(e.balance) });
+      case 'hired': case 'fired': case 'workerQuit': return t(`event.${e.type}`, { worker: t(`worker.${e.workerId}`) });
+      case 'workerMistake': return t('event.workerMistake', { worker: t(`worker.${e.workerId}`), item: t(`item.${e.itemId}`), kg: e.kg });
+      case 'gradeReport': return t('event.gradeReport', { name: nm(e.sheet.pigId), grade: t(`gradeLong.${e.sheet.grade}`) });
+      case 'marketMove': return t('event.marketMove', { price: money(e.carcassPricePerKg), trend: t(`trend.${e.trend}`) });
+      case 'moved': return t('event.moved', { n: e.pigIds.length, pen: this.penName(e.penId) });
+      case 'roleSet': return t('event.roleSet', { name: nm(e.pigId), role: t(`role.${e.role}`) });
+      case 'shipCancelled': return t('event.shipCancelled', { name: nm(e.pigIds[0]) });
+      case 'shipQueued': return t('event.shipQueued', { n: e.pigIds.length, fee: money(e.fee || 0) });
+      case 'shipped': return t('event.shipped', { n: e.pigIds.length });
+      case 'sickFound': return e.pigIds.length ? t('event.sickFound', { pen: this.penName(e.penId), n: e.pigIds.length }) : t('event.sickFoundNone', { pen: this.penName(e.penId) });
+      case 'stageChange': return t('event.stageChange', { name: nm(e.pigId), stage: t(`stage.${e.to}`) });
+      case 'treated': return t('event.treated', { name: nm(e.pigId), fee: money(e.fee) });
+      case 'vaccinated': return t('event.vaccinated', { pen: this.penName(e.penId), n: e.count });
+      case 'wages': return t('event.wages', { amount: money(e.amount) });
+      case 'weaned': return t('event.weaned', { name: nm(e.damId) });
+      case 'chronic': case 'death': case 'petted': case 'recovered': case 'sickVisible': return t(`event.${e.type}`, { name: nm(e.pigId) });
       default: return t(`event.${e.type}`, e);
     }
   },
-  act(action) {
-    const res = sim.act(this.state, action);
-    if (!res.ok) toast(t(`err.${res.error}`, { cap: sim.capacity(this.state) }), 'warn');
-    for (const e of res.events) {
+
+  // ---------- sim calls ----------
+  actions(target) { return sim.listActions(this.state, target); },
+  act(action, { quiet = false } = {}) {
+    const r = sim.doAction(this.state, action);
+    if (!r.ok) { toast(t(`error.${r.error.code}`), 'warn'); return r; }
+    this.state = r.state;
+    if (!quiet) for (const e of r.events) {
+      if (QUIET_EVENTS.has(e.type)) continue;
       if (e.type === 'petted') world?.cheer(e.pigId);
-      toast(this.eventText(e), e.type === 'paid' || e.type === 'mixer' ? 'good' : 'info');
+      toast(this.eventText(e), e.type === 'debtPaid' ? 'good' : 'info');
     }
-    refresh();
-    if (res.ok) this.save(false);
-    return res;
+    this.refresh();
+    this.save(false);
+    return r;
   },
   endDay() {
     closePopup();
     closeModal(true);
-    const { events, report } = sim.endDay(this.state);
+    const { state, events } = sim.endDay(this.state);
+    this.state = state;
+    this.refresh();
     this.save(false);
-    refresh();
-    screens.morning(events, report);
+    screens.morning(events.filter((e) => !QUIET_EVENTS.has(e.type)));
   },
+  refresh() {
+    this.view = sim.getView(this.state);
+    for (const p of this.view.pigs) this.names.set(p.id, p.name || this.defaultName(p.id));
+    renderHud(this.view);
+    world?.setView(this.view);
+  },
+
+  // ---------- save ----------
   save(announce) {
     try {
       localStorage.setItem(SAVE_KEY, sim.serialize(this.state));
       if (announce) toast(t('save.saved'), 'good');
-    } catch { /* storage blocked: export still works */ }
+    } catch { /* storage blocked: file export still works */ }
   },
   exportFile() {
     const blob = new Blob([sim.serialize(this.state)], { type: 'application/json' });
-    const a = h('a', { href: URL.createObjectURL(blob), download: `bitdeomi-ranch-day${this.state.day}.json` });
+    const a = h('a', { href: URL.createObjectURL(blob), download: `bitdeomi-ranch-day${this.view.day}.json` });
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   },
   importText(text) {
     try {
       this.state = sim.deserialize(text);
+      this.names.clear();
       this.save(false);
       closeModal();
-      refresh();
+      this.refresh();
       toast(t('save.loaded'), 'good');
-    } catch { toast(t('save.bad'), 'warn'); }
+    } catch (err) {
+      toast(t(err.message === 'save.version' ? 'error.save.version' : 'error.save.invalid'), 'warn');
+    }
   },
   newGame() {
-    this.state = sim.newGame({ seed: (Math.random() * 2 ** 31) >>> 0 });
+    this.state = sim.createGame((Math.random() * 2 ** 31) >>> 0);
+    this.names.clear();
     this.save(false);
     closeModal();
-    refresh();
+    this.refresh();
   },
   toast,
   paintPortrait(canvas, pig) {
     if (!canvas) return;
-    portraitSheets[pig.ageDays < 13 ? 1 : 0] ||= makePigSheets(pig.ageDays < 13 ? 0.6 : 1);
-    const g = portraitSheets[pig.ageDays < 13 ? 1 : 0];
-    const map = slotMap(rampsFor(pig.look));
+    const small = pig.stage === 'suckling' || pig.stage === 'nursery';
+    const g = (portraitSheets[small ? 1 : 0] ||= makePigSheets(small ? 0.6 : 1));
+    const layer = g.layers[layerFor(pig.appearance.pattern)];
     const img = new ImageData(CELL, CELL);
     for (let y = 0; y < CELL; y++) for (let x = 0; x < CELL; x++) {
       const si = (y * g.base.w + x) * 4, di = (y * CELL + x) * 4;
-      const layer = g.layers[pig.look.pattern];
       const src = layer && layer.data[si + 3] ? layer.data : g.base.data;
       for (let k = 0; k < 4; k++) img.data[di + k] = src[si + k];
     }
-    recolorPixels(img.data, map);
+    recolorPixels(img.data, slotMap(rampsFor(pig.appearance)));
     canvas.getContext('2d').putImageData(img, 0, 0);
   },
 };
@@ -106,20 +168,20 @@ let screens = null;
 
 // ---------- HUD ----------
 const $ = (id) => document.getElementById(id);
-function refresh() {
-  const st = app.state;
-  const d = sim.dateOf(st.day), di = sim.debtInfo(st), due = sim.dateOf(di.dueDay);
-  $('hud-date').textContent = t('hud.date', { year: d.year, season: t(`season.${d.season}`), day: d.dayOfSeason });
-  $('hud-ap').textContent = t('hud.apValue', { ap: st.ap, max: sim.rules.apMax });
-  $('hud-ap-pips').replaceChildren(...Array.from({ length: sim.rules.apMax }, (_, i) => h('i', { class: i < st.ap ? 'on' : '' })));
-  $('hud-ap-wrap').setAttribute('aria-label', `${t('hud.ap')} ${t('hud.apValue', { ap: st.ap, max: sim.rules.apMax })}`);
-  $('hud-cash').textContent = money(st.cash);
-  $('hud-debt').textContent = di.remaining
-    ? t('hud.debtValue', { season: t(`season.${due.season}`), day: due.dayOfSeason, amount: money(di.remaining), left: di.daysLeft })
+function renderHud(v) {
+  $('hud-date').textContent = app.dateText(v.day);
+  $('hud-ap').textContent = t('hud.apValue', { ap: v.ap.left, max: v.ap.max });
+  $('hud-ap-pips').replaceChildren(...Array.from({ length: v.ap.max }, (_, i) => h('i', { class: i < v.ap.left ? 'on' : '' })));
+  $('hud-ap-wrap').setAttribute('aria-label', `${t('hud.ap')} ${t('hud.apValue', { ap: v.ap.left, max: v.ap.max })}`);
+  $('hud-cash').textContent = money(v.cash);
+  const remaining = Math.max(0, (v.debt.minDue ?? v.debt.minPerSeason) - v.debt.paidThisSeason);
+  const left = v.debt.nextDueDay - v.day;
+  $('hud-debt').textContent = remaining
+    ? t('hud.debtValue', { date: app.seasonDayText(v.debt.nextDueDay), amount: money(remaining), left })
     : t('hud.debtPaid');
-  $('hud-debt').parentElement.classList.toggle('urgent', !!di.remaining && di.daysLeft <= 3);
-  $('hud-pigs').textContent = t('hud.pigs', { n: st.pigs.length, cap: sim.capacity(st) });
-  world?.setState(st);
+  $('hud-debt').parentElement.classList.toggle('urgent', !!remaining && left <= 3);
+  $('hud-pigs').textContent = t('hud.pigs', { n: v.herd.count, cap: v.herd.places ?? v.herd.max });
+  $('hud-market').textContent = t('hud.marketValue', { price: fmtNum(v.market.carcassPricePerKg), trend: t(`trend.${v.market.trend}`) });
 }
 
 function staticText() {
@@ -132,21 +194,22 @@ function loadSaved() {
   try {
     const s = localStorage.getItem(SAVE_KEY);
     if (s) return sim.deserialize(s);
-  } catch { /* fresh game */ }
-  return sim.newGame({ seed: 20261118 });
+  } catch { /* old or broken save: start fresh */ }
+  return sim.createGame(20261118);
 }
 
 async function boot() {
   await loadStrings();
   staticText();
   app.state = loadSaved();
+  app.view = sim.getView(app.state);
   screens = makeScreens(app);
   const canvas = $('world');
   world = await createWorld(canvas, {
     isBlocked: () => isModalOpen() || isPopupOpen(),
     onInteract: (target, pos) => screens.objectMenu(target, pos),
   });
-  refresh();
+  app.refresh();
   $('btn-end').onclick = () => app.endDay();
   $('btn-pigs').onclick = () => screens.pigList();
   $('btn-menu').onclick = () => screens.saveMenu();
@@ -159,9 +222,9 @@ async function boot() {
   });
   $('loading').remove();
   canvas.focus();
-  // read-only debug hooks for e2e tests (QA): window.__game.player -> {x, y} in tiles
-  window.__ranch = { app, sim, screens };
-  window.__game = Object.freeze({ get player() { return world.playerPos(); }, get state() { return app.state; } });
+  // read-only debug hooks for e2e tests (QA)
+  window.__ranch = { app, sim, screens, world };
+  window.__game = Object.freeze({ get player() { return world.playerPos(); }, get state() { return app.state; }, get view() { return app.view; } });
   document.body.dataset.ready = 'true';
 }
 

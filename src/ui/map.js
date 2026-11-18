@@ -3,11 +3,13 @@ export const TILE = 16;
 export const MAP_W = 36;
 export const MAP_H = 20;
 
+// Pen slots on the map. The sim's pens (view.pens, in order) fill these slots;
+// a slot with no sim pen yet is drawn as an empty, locked pen.
 export const PENS = [
-  { id: 'A', x: 2, y: 12 },
-  { id: 'B', x: 10, y: 12 },
-  { id: 'C', x: 18, y: 12 },
-  { id: 'D', x: 26, y: 12 },
+  { slot: 0, x: 2, y: 12 },
+  { slot: 1, x: 10, y: 12 },
+  { slot: 2, x: 18, y: 12 },
+  { slot: 3, x: 26, y: 12 },
 ];
 export const PEN_SIZE = 6; // outer, fence included; 4x4 floor inside
 export const BUILDINGS = [
@@ -36,7 +38,7 @@ function build() {
     for (let y = pen.y; y < pen.y + PEN_SIZE; y++) for (let x = pen.x; x < pen.x + PEN_SIZE; x++) {
       const edge = y === pen.y || x === pen.x || y === pen.y + PEN_SIZE - 1 || x === pen.x + PEN_SIZE - 1;
       t[y][x] = edge ? 'f' : 'm';
-      obj[y][x] = { kind: 'pen', penId: pen.id };
+      obj[y][x] = { kind: 'pen', slot: pen.slot };
     }
     t[pen.y][pen.x + 2] = 'e';
   }
@@ -52,8 +54,8 @@ export function walkable(x, y) {
   return !SOLID.has(MAP.t[y][x]);
 }
 export const objectAt = (x, y) => (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H ? null : MAP.obj[y][x]);
-export function penFloor(penId) {
-  const p = PENS.find((q) => q.id === penId);
+export function penFloor(slot) {
+  const p = PENS[slot] || PENS[0];
   return { x0: (p.x + 1) * TILE, y0: (p.y + 1) * TILE, x1: (p.x + PEN_SIZE - 1) * TILE, y1: (p.y + PEN_SIZE - 1) * TILE };
 }
 

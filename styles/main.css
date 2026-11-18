@@ -157,3 +157,5 @@ ul.events { padding-left: 18px; margin: 0; line-height: 1.7; }
   .mixrow input[type=range] { grid-column: 1 / -1; grid-row: 2; }
 }
 @media (prefers-reduced-motion: reduce) { .btn:active:not(:disabled) { transform: none; } }
+.chip { display: inline-block; margin: 2px 8px 2px 0; padding: 2px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); font-size: 12px; }
+h3 { font-size: 14px; margin: 6px 0 2px; }
