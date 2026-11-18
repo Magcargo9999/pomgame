@@ -1,0 +1,1 @@
+{"name":"piglet","stage":"piglet","keyposes":"piglet-compat-keyposes","bodySize":[16,12],"eyes":{"down":[[13,25],[18,25]],"up":[],"right":[[21,22]]},"features":{"down":{"box":[14,26,17,28],"inside":[[15,27,4],[16,27,4]]},"right":{"box":[21,22,24,25],"inside":[[22,23,4],[22,24,4],[23,23,6],[23,24,6]]}}}
