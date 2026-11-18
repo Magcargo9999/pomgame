@@ -6,6 +6,10 @@
       "meta": "pig/pig_adult.json",
       "layers": { "belt": "pig/pig_adult.belt.png", "spots": "pig/pig_adult.spots.png", "points": "pig/pig_adult.points.png" }
     },
-    "piglet": null
+    "piglet": {
+      "sheet": "pig/piglet.png",
+      "meta": "pig/piglet.json",
+      "layers": { "belt": "pig/piglet.belt.png", "spots": "pig/piglet.spots.png", "points": "pig/piglet.points.png" }
+    }
   }
 }
