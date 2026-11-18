@@ -131,6 +131,9 @@ legend { font-weight: 700; padding: 0 4px; }
 .g-2 { color: #6e5846; }
 .g-out { color: var(--bad); }
 blockquote.line { margin: 10px 0; padding: 8px 12px; background: #fff; border-left: 4px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; }
+.npc-dialogue { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.npc-dialogue .line { margin: 0; }
+.npc-portrait { flex: none; image-rendering: pixelated; }
 ul.events { padding-left: 18px; margin: 0; line-height: 1.7; }
 
 .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); flex-wrap: wrap; }

@@ -204,10 +204,11 @@ async function boot() {
   staticText();
   app.state = loadSaved();
   app.view = sim.getView(app.state);
-  screens = makeScreens(app);
+  const art = await sprites;
+  screens = makeScreens(app, art.faces);
   const canvas = $('world');
   world = await createWorld(canvas, {
-    sprites,
+    sprites: art,
     isBlocked: () => isModalOpen() || isPopupOpen(),
     onInteract: (target, pos) => screens.objectMenu(target, pos),
   });

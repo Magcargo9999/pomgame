@@ -1,4 +1,4 @@
-// Draws the static farm background once into an offscreen canvas (placeholder art).
+// Draws the static farm background once into an offscreen canvas with procedural fallbacks.
 import { MAP, MAP_W, MAP_H, TILE, BUILDINGS, PENS, PEN_SIZE, GATE } from './map.js';
 
 const C = {
@@ -13,16 +13,118 @@ const C = {
 
 function hash(x, y) { return ((x * 73856093) ^ (y * 19349663)) >>> 0; }
 
-export function drawBackground(ctx) {
+// Visual placements share map coordinates without adding interaction targets.
+const PIGGERY = { id: 'piggery_t1', x: 17, y: 1, w: 6, h: 4 };
+const DECORATIONS = [
+  ['barrel', 1, 3, C.wood], ['bucket', 7, 3, C.metal],
+  ['bush', 1, 7, C.hedge], ['crate', 12, 3, C.wood3],
+  ['feedsack', 8, 3, C.straw], ['flowers_pink', 6, 4, '#bc777c'],
+  ['flowers_white', 3, 4, C.wall], ['haybale', 14, 3, C.straw],
+  ['haypile', 15, 3, C.straw], ['rock', 31, 7, C.metal2],
+  ['stump', 33, 3, C.wood2], ['water_pump', 12, 7, C.metal2],
+  ['wheelbarrow', 24, 3, C.wood],
+];
+const GRASS = ['grass_1', 'grass_2', 'grass_3', 'clover', 'grass_flower_white', 'grass_flower_pink'];
+const CORNERS = ['tl', 'tr', 'bl', 'br'];
+const isPath = (kind) => kind === 'p' || kind === 'e' || kind === 'G';
+
+function draw(ctx, image, x, y) {
+  if (!image) return false;
+  ctx.drawImage(image, x, y);
+  return true;
+}
+
+function drawPath(ctx, tiles, tx, ty, x, y) {
+  const top = isPath(MAP.t[ty - 1]?.[tx]) ? 1 : 0;
+  const bottom = isPath(MAP.t[ty + 1]?.[tx]) ? 1 : 2;
+  const left = isPath(MAP.t[ty][tx - 1]) ? 1 : 0;
+  const right = isPath(MAP.t[ty][tx + 1]) ? 1 : 2;
+  const keys = [[top, left], [top, right], [bottom, left], [bottom, right]];
+  const parts = keys.map(([row, col]) => tiles['tile_path_' + row + '_' + col]);
+  if (parts.some((image) => !image)) return false;
+  const half = TILE / 2;
+  parts.forEach((image, i) => {
+    const dx = (i % 2) * half, dy = Math.floor(i / 2) * half;
+    ctx.drawImage(image, dx, dy, half, half, x + dx, y + dy, half, half);
+  });
+  return true;
+}
+
+function terrainKey(kind, x, y, hash) {
+  if (kind === 'h') {
+    const row = y === 0 ? 0 : y === MAP_H - 1 ? 2 : 1;
+    const col = x === 0 ? 0 : x === MAP_W - 1 ? 2 : 1;
+    return 'tile_hedge_' + row + '_' + col;
+  }
+  if (kind === 'm') return hash % 13 === 0 ? 'tile_mud' : 'tile_penfloor_' + (1 + hash % 2);
+  if (kind === 'f') return 'tile_penfloor_1';
+  return 'tile_' + GRASS[hash % 19 < 3 ? 3 + hash % 19 : hash % 3];
+}
+
+function drawFence(ctx, tiles, r, pen) {
+  for (let row = 0; row < PEN_SIZE; row++) for (let col = 0; col < PEN_SIZE; col++) {
+    const end = PEN_SIZE - 1;
+    const horizontal = row === 0 || row === end;
+    const vertical = col === 0 || col === end;
+    if (!horizontal && !vertical) continue;
+    const x = (pen.x + col) * TILE, y = (pen.y + row) * TILE;
+    const open = row === 0 && col === 2;
+    if (open) {
+      const left = tiles.fence_gate_open_left, right = tiles.fence_gate_open_right;
+      if (left && right) {
+        ctx.drawImage(left, 0, 0, 8, TILE, x, y, 8, TILE);
+        ctx.drawImage(right, 8, 0, 8, TILE, x + 8, y, 8, TILE);
+      } else {
+        r(x, y + 2, 3, 12, C.wood2);
+        r(x + 13, y + 2, 3, 12, C.wood2);
+      }
+      continue;
+    }
+    const key = horizontal && vertical
+      ? 'fence_corner_' + CORNERS[(row === end ? 2 : 0) + (col === end ? 1 : 0)]
+      : horizontal ? 'fence_h' : 'fence_v';
+    if (draw(ctx, tiles[key], x, y)) continue;
+    if (horizontal) {
+      r(x, y + 8, TILE, 3, C.wood);
+      r(x, y + 13, TILE, 2, C.wood2);
+    }
+    r(x + 6, y + 2, 4, vertical ? TILE - 2 : 13, C.wood3);
+    r(x + 9, y + 2, 1, vertical ? TILE - 2 : 13, C.wood2);
+  }
+  const x = (pen.x + 3) * TILE, y = pen.y * TILE;
+  if (!draw(ctx, tiles.pen_sign, x, y)) {
+    r(x + 4, y + 1, 8, 6, C.wood3);
+    r(x + 7, y + 7, 2, 6, C.wood2);
+  }
+}
+
+export function drawTroughs(ctx, deco = {}, pens = [], cam) {
+  for (const pen of PENS) {
+    const x = (pen.x + 1) * TILE - cam.x;
+    const y = (pen.y + PEN_SIZE - 2) * TILE - cam.y;
+    const feed = pens[pen.slot]?.fedToday ? 'trough_feed_full' : 'trough_feed_empty';
+    for (const [key, dx] of [[feed, 0], ['trough_water', TILE * 2]]) {
+      if (draw(ctx, deco[key], x + dx, y)) continue;
+      ctx.fillStyle = C.metal2;
+      ctx.fillRect(x + dx + 4, y + 2, 20, 7);
+      ctx.fillStyle = key === 'trough_water' ? C.window : key === 'trough_feed_full' ? C.straw : C.metal;
+      ctx.fillRect(x + dx + 5, y + 3, 18, 3);
+    }
+  }
+}
+
+export function drawBackground(ctx, { tiles = {}, buildings = {}, deco = {} } = {}) {
+  ctx.imageSmoothingEnabled = false;
   const r = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
   for (let ty = 0; ty < MAP_H; ty++) for (let tx = 0; tx < MAP_W; tx++) {
     const k = MAP.t[ty][tx], x = tx * TILE, y = ty * TILE, h = hash(tx, ty);
     r(x, y, TILE, TILE, C.grass);
+    if (isPath(k) ? drawPath(ctx, tiles, tx, ty, x, y) : draw(ctx, tiles[terrainKey(k, tx, ty, h)], x, y)) continue;
     if (k === 'g' || k === 'b') {
       if (h % 3 === 0) { r(x + (h % 11), y + ((h >> 4) % 12), 1, 2, C.grass2); r(x + (h % 11) + 2, y + ((h >> 4) % 12) + 1, 1, 2, C.grass2); }
       if (h % 7 === 0) r(x + ((h >> 8) % 13), y + ((h >> 12) % 13), 2, 1, C.grass3);
     }
-    if (k === 'p' || k === 'e' || k === 'G') {
+    if (isPath(k)) {
       r(x, y, TILE, TILE, C.path);
       if (h % 2) r(x + (h % 13), y + ((h >> 5) % 13), 2, 1, C.path2);
     }
@@ -37,35 +139,28 @@ export function drawBackground(ctx) {
       if (h % 5 === 0) r(x + ((h >> 6) % 12), y + ((h >> 9) % 12), 2, 2, C.floor2);
     }
   }
-  // pen fences: posts + two rails
-  for (const pen of PENS) {
-    const x0 = pen.x * TILE, y0 = pen.y * TILE, s = PEN_SIZE * TILE;
-    const rail = (x, y, w, h) => { r(x, y, w, h, C.wood); r(x, y + h - 1, w, 1, C.wood2); };
-    const gx = (pen.x + 2) * TILE;
-    rail(x0 + 2, y0 + 5, gx - x0 - 2, 3); rail(gx + TILE, y0 + 5, x0 + s - gx - TILE - 2, 3);
-    rail(x0 + 2, y0 + 10, gx - x0 - 2, 3); rail(gx + TILE, y0 + 10, x0 + s - gx - TILE - 2, 3);
-    rail(x0 + 2, y0 + s - 11, s - 4, 3); rail(x0 + 2, y0 + s - 6, s - 4, 3);
-    for (const xx of [x0 + 6, x0 + s - 9]) { r(xx, y0 + 4, 3, s - 6, C.wood); r(xx + 2, y0 + 4, 1, s - 6, C.wood2); }
-    for (let i = 0; i <= PEN_SIZE; i++) {
-      const px = Math.min(x0 + i * TILE, x0 + s - 3);
-      if (px === gx || px === gx + TILE) continue;
-      r(px, y0 + 2, 3, 12, C.wood3); r(px + 2, y0 + 2, 1, 12, C.wood2);
-      r(px, y0 + s - 14, 3, 12, C.wood3); r(px + 2, y0 + s - 14, 1, 12, C.wood2);
-    }
-    // gate posts and trough
-    r(gx - 1, y0, 3, 15, C.wood2); r(gx + TILE - 2, y0, 3, 15, C.wood2);
-    const tx = x0 + TILE + 4, ty = y0 + s - TILE * 2 + 2;
-    r(tx, ty, 20, 7, C.metal2); r(tx + 1, ty + 1, 18, 3, C.metal);
+  for (const pen of PENS) drawFence(ctx, tiles, r, pen);
+  for (const b of [...BUILDINGS, PIGGERY]) {
+    if (!draw(ctx, buildings[b.id], b.x * TILE, b.y * TILE)) drawBuilding(b, r);
   }
-  for (const b of BUILDINGS) drawBuilding(ctx, b, r);
+  for (const [key, tx, ty, color] of DECORATIONS) {
+    const x = tx * TILE, y = (ty + 1) * TILE;
+    const image = deco['deco_' + key];
+    if (image) draw(ctx, image, x, y - image.height);
+    else {
+      r(x + 4, y - 7, 8, 5, color);
+      r(x + 6, y - 9, 4, 2, color);
+    }
+  }
   // gate to town
   const gx = GATE.x * TILE, gy = GATE.y * TILE;
   r(gx + 1, gy - 6, 3, 22, C.wood2); r(gx + 12, gy - 6, 3, 22, C.wood2);
   r(gx + 1, gy - 6, 14, 3, C.wood3);
+  if (draw(ctx, tiles.pen_sign, gx, gy - 8)) return;
   r(gx + 4, gy - 2, 8, 6, C.wall); r(gx + 5, gy - 1, 6, 1, C.wood2); r(gx + 5, gy + 1, 4, 1, C.wood2);
 }
 
-function drawBuilding(ctx, b, r) {
+function drawBuilding(b, r) {
   const x = b.x * TILE, y = b.y * TILE, w = b.w * TILE, h = b.h * TILE;
   if (b.id === 'house') {
     r(x + 2, y + 18, w - 4, h - 18, C.wall); r(x + 2, y + h - 3, w - 4, 3, C.wall2);
@@ -75,7 +170,7 @@ function drawBuilding(ctx, b, r) {
     r(dx, y + h - 18, 10, 18, C.door); r(dx + 7, y + h - 10, 2, 2, C.truck);
     r(x + 8, y + 28, 12, 9, C.window); r(x + 13, y + 28, 2, 9, C.wall2);
     r(x + w - 14, y + 26, 6, 4, C.wood2); // a crack
-  } else if (b.id === 'shed') {
+  } else if (b.id === 'shed' || b.id === 'piggery_t1') {
     r(x + 2, y + 12, w - 4, h - 12, C.wood); r(x + 2, y + 12, w - 4, 2, C.wood3);
     for (let i = x + 6; i < x + w - 4; i += 6) r(i, y + 14, 1, h - 14, C.wood2);
     r(x, y + 6, w, 7, C.metal); r(x, y + 12, w, 1, C.metal2);

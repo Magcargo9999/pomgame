@@ -2,7 +2,7 @@
 // wandering in their pens. Drawn at 1 logical px, scaled by an integer factor
 // with image-rendering: pixelated. Reads only the sim's View (getView).
 import { TILE, MAP_W, MAP_H, START, PENS, PEN_SIZE, walkable, objectAt, penFloor, fitScale, camera } from './map.js';
-import { drawBackground } from './tiles.js';
+import { drawBackground, drawTroughs } from './tiles.js';
 import { makePigSheets, makePlayerSheet, recolorPixels, slotMap, CELL, ANCHOR, PLAYER_CELL, PLAYER_ANCHOR, sheetMeta } from './sprites.js';
 import { rampsFor, lookKey, layerFor } from './palettes.js';
 
@@ -38,7 +38,7 @@ function canvasPixels(src) {
 async function loadManifest() {
   try { return await (await fetch('./assets/sprites/manifest.json')).json(); } catch { return {}; }
 }
-async function loadPigSheet(entry, scale) {
+async function loadSheet(entry) {
   if (entry && entry.sheet && entry.meta) {
     try {
       const layerEntries = Object.entries(entry.layers || {});
@@ -51,26 +51,51 @@ async function loadPigSheet(entry, scale) {
       return { meta, base, layers, real: true };
     } catch (err) { console.warn('sprite fallback:', entry.sheet, err.message); }
   }
+  return null;
+}
+
+async function loadPigSheet(entry, scale) {
+  const sheet = await loadSheet(entry);
+  if (sheet) return sheet;
   const g = makePigSheets(scale);
   return { meta: g.meta, base: bufToCanvas(g.base), layers: Object.fromEntries(Object.entries(g.layers).map(([k, v]) => [k, bufToCanvas(v)])), real: false };
 }
 
 // Sprite sheets load in parallel; main.js starts this before anything else so the
 // game is ready as soon as the strings are.
+async function loadImages(entries = {}) {
+  const loaded = await Promise.all(Object.entries(entries).map(async ([key, path]) => {
+    try {
+      return [key, await loadImage(`./assets/sprites/${path}`)];
+    } catch {
+      return [key, null];
+    }
+  }));
+  return Object.fromEntries(loaded);
+}
+
 export async function loadSprites() {
   const manifest = await loadManifest();
-  const [adult, piglet] = await Promise.all([loadPigSheet(manifest.pig?.adult, 1), loadPigSheet(manifest.pig?.piglet, 0.6)]);
-  return { adult, piglet };
+  const [adult, piglet, farmer, tiles, buildings, deco, faces] = await Promise.all([
+    loadPigSheet(manifest.pig?.adult, 1),
+    loadPigSheet(manifest.pig?.piglet, 0.6),
+    loadSheet(manifest.player?.farmer),
+    loadImages(manifest.tiles),
+    loadImages(manifest.buildings),
+    loadImages(manifest.deco),
+    loadImages(manifest.faces),
+  ]);
+  return { adult, piglet, farmer, tiles, buildings, deco, faces };
 }
 
 export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
   const ctx = canvas.getContext('2d');
   const bg = document.createElement('canvas');
   bg.width = MAP_W * TILE; bg.height = MAP_H * TILE;
-  drawBackground(bg.getContext('2d'));
   const sheets = await (sprites || loadSprites());
+  drawBackground(bg.getContext('2d'), sheets);
   const player = { tx: START.x, ty: START.y, fx: START.x, fy: START.y, dir: 'down', moving: null, walkT: 0 };
-  const playerSheet = bufToCanvas(makePlayerSheet());
+  let fallbackPlayer;
   const held = [];
   const actors = new Map();
   const tinted = new Map();
@@ -270,15 +295,32 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     }
   }
   function drawPlayer() {
-    const [W, H] = PLAYER_CELL, row = { down: 0, up: 1, right: 2, left: 2 }[player.dir];
-    const f = player.walkT ? Math.floor(player.walkT / STEP_MS) % 4 : 0;
-    const x = Math.round(player.fx * TILE + 8) - cam.x, y = Math.round(player.fy * TILE + 15) - cam.y;
-    ctx.fillStyle = 'rgba(40,30,20,0.25)'; ctx.fillRect(x - 5, y - 1, 10, 2);
-    if (player.dir === 'left') {
-      ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1);
-      ctx.drawImage(playerSheet, f * W, row * H, W, H, -(W - PLAYER_ANCHOR[0]), y - PLAYER_ANCHOR[1], W, H);
+    const farmer = sheets.farmer;
+    const meta = farmer?.meta;
+    const motion = player.moving ? 'walk' : 'idle';
+    const direct = meta?.anims?.[`${motion}_${player.dir}`];
+    const mirrored = !direct && player.dir === 'left' ? meta?.left : null;
+    const anim = direct ?? meta?.anims?.[`${motion}_${mirrored?.source}`];
+    const [w, h] = anim ? meta.cell : PLAYER_CELL;
+    const [ax, ay] = anim ? meta.anchor : PLAYER_ANCHOR;
+    const sheet = anim ? farmer.base : (fallbackPlayer ??= bufToCanvas(makePlayerSheet()));
+    const row = anim?.row ?? { down: 0, up: 1, right: 2, left: 2 }[player.dir];
+    const elapsed = motion === 'walk' ? player.walkT : last;
+    const frame = anim
+      ? Math.floor(elapsed / anim.ms) % anim.frames
+      : Math.floor(player.walkT / STEP_MS) % 4;
+    const flip = anim ? mirrored?.flipX : player.dir === 'left';
+    const x = Math.round(player.fx * TILE + 8) - cam.x;
+    const y = Math.round(player.fy * TILE + 15) - cam.y;
+    ctx.fillStyle = 'rgba(40,30,20,0.25)';
+    ctx.fillRect(x - 5, y - 1, 10, 2);
+    if (flip) {
+      ctx.save();
+      ctx.translate(x, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(sheet, frame * w, row * h, w, h, ax - w, y - ay, w, h);
       ctx.restore();
-    } else ctx.drawImage(playerSheet, f * W, row * H, W, H, x - PLAYER_ANCHOR[0], y - PLAYER_ANCHOR[1], W, H);
+    } else ctx.drawImage(sheet, frame * w, row * h, w, h, x - ax, y - ay, w, h);
   }
   function drawFocus() {
     if (document.activeElement !== canvas) return;
@@ -299,6 +341,7 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     ctx.fillStyle = '#2f5e30';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bg, -cam.x, -cam.y);
+    drawTroughs(ctx, sheets.deco, view?.pens, cam);
     drawLockedPens();
     const drawList = [...actors.values()].map((a) => ({ y: a.y, fn: () => drawPig(a) }));
     drawList.push({ y: player.fy * TILE + 15, fn: drawPlayer });

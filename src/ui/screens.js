@@ -4,7 +4,7 @@ import { h, openModal, closeModal, openPopup } from './dom.js';
 import { t, money, fmtNum } from './i18n.js';
 import * as sim from './sim.js';
 
-export function makeScreens(app) {
+export function makeScreens(app, faces = {}) {
   const V = () => app.view;
   const name = (idOrPig) => app.pigName(idOrPig);
   const breedName = (id) => t(`breed.${id}`);
@@ -409,10 +409,15 @@ export function makeScreens(app) {
         if (e.key === 'ArrowRight') town(TABS[(i + 1) % TABS.length]);
         if (e.key === 'ArrowLeft') town(TABS[(i + TABS.length - 1) % TABS.length]);
       } }, t(`town.${k}`)));
+    const face = faces[tab === 'workers' ? 'worker' : tab];
+    const portrait = face && h('img', { class: 'npc-portrait', src: face.src, width: 48, height: 48, alt: '' });
+    const quote = line && h('blockquote', { class: 'line' },
+      h('strong', { text: `${t(`town.${tab}`)}: ` }),
+      t(line, { days: v.debt.nextDueDay - v.day, balance: money(v.debt.balance) }));
     const box = modal({ title: t('town.title'), wide: true, body: h('div', { class: 'town' },
       h('div', { role: 'tablist', class: 'tabs' }, tabBtns),
       h('div', { role: 'tabpanel', class: 'tabpanel' },
-        line ? h('blockquote', { class: 'line' }, h('strong', { text: `${t(`town.${tab}`)}: ` }), t(line, { days: v.debt.nextDueDay - v.day, balance: money(v.debt.balance) })) : null,
+        portrait ? h('div', { class: 'npc-dialogue' }, portrait, quote) : quote,
         content),
       h('div', { class: 'actions' }, h('button', { class: 'btn', onclick: () => closeModal() }, t('town.back')))) });
     box.querySelector('.tab.on')?.focus();
