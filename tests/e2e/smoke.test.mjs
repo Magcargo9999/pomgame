@@ -22,10 +22,8 @@ after(async () => {
 
 async function openGame(page, errors) {
   page.on('pageerror', (e) => errors.push(String(e)));
-  // Resource 404s are judged by URL below; other console errors count.
-  page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) errors.push(m.text()); });
-  // The shell probes assets/sprites/* and falls back to generated sprites until the art lands.
-  page.on('response', (r) => { if (r.status() >= 400 && !/\/assets\/sprites\//.test(r.url())) errors.push(`${r.status()} ${r.url()}`); });
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
   await page.goto(srv.url);
   await page.waitForFunction(() => document.body.dataset.ready === 'true' || document.querySelector('[data-testid="day"]'), null, { timeout: 15_000 });
 }
@@ -63,8 +61,12 @@ test('smoke: load, move, end day, reload', { skip }, async (t) => {
     });
 
     await check('end day advances exactly one day and refills AP (A2, A4)', async () => {
+      // spend some AP first so the refill is visible
+      await page.evaluate(() => window.__ranch?.app?.act?.({ type: 'cleanPen', penId: 'pen-1' }));
+      assert.ok((await gameNums(page)).ap < n0.ap, 'cleanPen did not spend AP');
+      await page.keyboard.press('Escape');
       await clickEndDay(page);
-      await page.waitForFunction((d) => ((window.__game?.state ?? window.__ranch?.app?.state)?.day ?? 0) !== d, n0.day, { timeout: 5_000 }).catch(() => {});
+      await page.waitForFunction((d) => ((window.__game?.view ?? window.__ranch?.app?.view)?.day ?? 0) !== d, n0.day, { timeout: 5_000 }).catch(() => {});
       await page.keyboard.press('Escape'); // close the morning summary
       const n1 = await gameNums(page);
       assert.equal(n1.day, n0.day + 1);
@@ -81,4 +83,49 @@ test('smoke: load, move, end day, reload', { skip }, async (t) => {
     await shot(page, failed ? 'smoke-last-FAILED' : 'smoke-last');
     await context.close();
   }
+});
+
+// J3–J5: export a save file, import it into a fresh browser profile, reject a bad file.
+test('save file export and import (J3, J4, J5)', { skip }, async (t) => {
+  const ctxA = await browser.newContext({ acceptDownloads: true });
+  const a = await ctxA.newPage(); const errors = [];
+  let failed = false;
+  try {
+    await openGame(a, errors);
+    await clickEndDay(a); await a.keyboard.press('Escape');
+    await clickEndDay(a); await a.keyboard.press('Escape');
+    const want = await gameNums(a);
+    await a.keyboard.press('KeyM');
+    const [dl] = await Promise.all([a.waitForEvent('download'), a.getByTestId('export-save').click()]);
+    const file = await dl.path();
+    const fs = await import('node:fs');
+    const text = fs.readFileSync(file, 'utf8');
+    await t.test('J3 export is JSON with a save version', () => {
+      const j = JSON.parse(text);
+      assert.ok(j.saveVersion ?? j.version, 'no saveVersion in export');
+    });
+
+    const ctxB = await browser.newContext();
+    const b = await ctxB.newPage();
+    try {
+      await openGame(b, []);
+      await t.test('J4 import restores the exported game in a fresh profile', async () => {
+        assert.notDeepEqual(await gameNums(b), want, 'fresh profile already equals the export');
+        await b.keyboard.press('KeyM');
+        await b.getByTestId('import-file').setInputFiles(file);
+        await b.waitForFunction((d) => (window.__game?.view ?? window.__ranch?.app?.view)?.day === d, want.day, { timeout: 5_000 }).catch(() => {});
+        assert.deepEqual(await gameNums(b), want);
+      });
+      await t.test('J5 a corrupt file is refused and the game is untouched', async () => {
+        await b.keyboard.press('Escape');
+        const before = await gameNums(b);
+        await b.keyboard.press('KeyM');
+        await b.getByTestId('import-file').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"nope":1') });
+        await b.waitForTimeout(300);
+        assert.deepEqual(await gameNums(b), before);
+      });
+    } catch (e) { failed = true; await shot(b, 'import-FAILED'); throw e; }
+    finally { await ctxB.close(); }
+  } catch (e) { failed = true; await shot(a, 'export-FAILED'); throw e; }
+  finally { if (!failed) await shot(a, 'export-last'); await ctxA.close(); }
 });

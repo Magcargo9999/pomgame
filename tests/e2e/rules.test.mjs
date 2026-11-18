@@ -161,7 +161,9 @@ test('J6 save round trip is lossless', { skip }, () => {
 
 test('K1 no Hangul in src/sim', { skip }, () => {
   const dir = path.join(ROOT, 'src', 'sim');
-  for (const f of fs.readdirSync(dir)) {
+  const files = fs.readdirSync(dir, { recursive: true }).filter((f) => /\.m?js$/.test(f));
+  assert.ok(files.length > 0, 'no sim files found');
+  for (const f of files) {
     const lines = fs.readFileSync(path.join(dir, f), 'utf8').split(/\r?\n/)
       .filter((l) => /[가-힣]/.test(l.replace(/\/\/.*$/, '').replace(/\/\*.*?\*\//g, '')));
     assert.deepEqual(lines, [], `${f} has Hangul outside comments`);
