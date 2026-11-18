@@ -20,7 +20,8 @@ test('L3 manifest points pig.adult at the 32px pig_adult sheet (ART-4)', { skip 
 });
 
 test('L3 the realistic 128px sheet is not referenced by the manifest or src/ui', { skip }, () => {
-  assert.doesNotMatch(JSON.stringify(manifest), /realistic/);
+  const entries = Object.fromEntries(Object.entries(manifest).filter(([k]) => !k.startsWith('_'))); // skip _doc notes
+  assert.doesNotMatch(JSON.stringify(entries), /pig_adult_realistic/);
   const ui = path.join(ROOT, 'src', 'ui');
   for (const f of fs.readdirSync(ui, { recursive: true }).filter((x) => /\.m?js$/.test(x))) {
     assert.doesNotMatch(fs.readFileSync(path.join(ui, f), 'utf8'), /pig_adult_realistic/, `${f} references the realistic sheet`);

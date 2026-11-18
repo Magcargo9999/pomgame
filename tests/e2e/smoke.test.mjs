@@ -25,7 +25,7 @@ async function openGame(page, errors) {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
   await page.goto(srv.url);
-  await page.waitForFunction(() => document.body.dataset.ready === 'true' || document.querySelector('[data-testid="day"]'), null, { timeout: 15_000 });
+  await page.waitForFunction(() => document.body.dataset.ready === 'true', null, { timeout: 15_000 });
 }
 
 const canvasPng = (page) => page.locator('canvas').first().screenshot();
@@ -76,7 +76,7 @@ test('smoke: load, move, end day, reload', { skip }, async (t) => {
     await check('auto-save survives reload (J1)', async () => {
       const before = await gameNums(page);
       await page.reload();
-      await page.waitForFunction(() => document.body.dataset.ready === 'true' || document.querySelector('[data-testid="day"]'));
+      await page.waitForFunction(() => document.body.dataset.ready === 'true', null, { timeout: 15_000 });
       assert.deepEqual(await gameNums(page), before);
     });
   } finally {
