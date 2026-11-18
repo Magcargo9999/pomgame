@@ -1,5 +1,6 @@
 // Derive every animation and pattern from three generated idle key poses.
 const fs=require('node:fs'),path=require('node:path');
+const {connectSmallParts}=require('./sprite-components.cjs');
 const {prepare,at,clean,bounds,C,R,read,write,rgb,writeRaster}=require('./build-pig.cjs'),{encode,decode}=require('./png.cjs');
 const profile=read(process.argv[2]||'docs/art/pig-adult.profile.json'),NAME=profile.name,KEYS=profile.keyposes;
 const sources=read('art-review/'+KEYS+'/sources.json'),pal=read('docs/art/palette.json'),breeds=read('docs/art/breeds.json');
@@ -13,10 +14,11 @@ for(const dir of dirs){let r=prepare(path.resolve(__dirname,'../art-review',KEYS
   if(dir==='down'){a[21*32+12]=7;a[21*32+20]=7;for(const x of [15,18])for(const y of [23,24])a[y*32+x]=6;}
   if(dir==='up'){const curl=[[-1,3,3,3,-1],[3,0,0,0,3],[3,0,1,1,3],[3,0,0,3,3],[-1,3,0,3,-1]];for(let y=0;y<5;y++)for(let x=0;x<5;x++)if(curl[y][x]>=0)a[(21+y)*32+14+x]=curl[y][x];}
  }else{
-  const feature=profile.features?.[dir];if(feature){const[x0,y0,x1,y1]=feature.box;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)a[y*32+x]=3;for(const[x,y,c]of feature.inside)a[y*32+x]=c;}
+  const feature=profile.features?.[dir];if(feature){if(feature.box){const[x0,y0,x1,y1]=feature.box;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)a[y*32+x]=3;}for(const[x,y,c]of feature.inside||[])a[y*32+x]=c;for(const[x,y]of feature.erase||[])a[y*32+x]=-1;for(const[x,y,c]of feature.pixels||[])a[y*32+x]=c;}
   for(const [x,y]of profile.eyes[dir])if(a[y*32+x]>=0)a[y*32+x]=7;
  }
  for(let n=0;n<6;n++){const c=clean(a);a=c.a;if(!c.edits)break;}
+ if(profile.stage==='piglet')a=connectSmallParts(a,32,32);
  let raw=prepareRaw(path.resolve(__dirname,'../art-review',KEYS,sources[dir]),r.shiftY),changes=a.reduce((n,v,i)=>n+(v!==raw[i]),0);
  provenance[dir]={source:sources[dir],sourceSize:r.sourceSize,bounds:bounds(a),anchorTranslationY:r.shiftY,correctedPixels:changes};
  bases[dir]=a;writeRaster('art-review/'+KEYS+'/'+NAME+'_'+dir+'.png',32,32,a);writeRaster('art-review/'+KEYS+'/'+NAME+'_'+dir+'_x8.png',32,32,a,[...breeds.breeds?.duroc?.coat||breeds.duroc.coat,...(breeds.breeds?.duroc?.snout||breeds.duroc.snout),pal.eye],8);
@@ -47,6 +49,10 @@ function frame(a,dir,anim,f){let b;
  }
  if(anim==='sleep'){const top=bounds(a.map(p=>p?p.c:-1))[1],height=29-top;b=transform(a,(x,y,p)=>[x,20+Math.round((y-top)*9/height)]);b=b.map(p=>p?.c===7?{...p,c:3}:p);if(f===1){const raised=transform(b,(x,y)=>[x,y<28?y-1:y]);for(let x=0;x<32;x++)if(b[27*32+x])raised[27*32+x]=b[27*32+x];b=raised;}}
  if(anim==='happy')b=transform(a,(x,y)=>[x,y-(f===1?2:0)]);
+ if(profile.stage==='piglet'){
+  const connected=connectSmallParts(b.map(p=>p?p.c:-1),32,32);
+  b=b.map((p,i)=>{if(connected[i]<0)return null;if(p)return p;const x=i%32,y=i>>5,near=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([xx,yy])=>xx>=0&&xx<32&&yy>=0&&yy<32).map(([xx,yy])=>b[yy*32+xx]).filter(Boolean);return{...(near.find(p=>p.leg>=0)||near[0]),c:connected[i]};});
+ }
  // Restore darkest material outline and remove isolated shade pixels after each edit.
  for(let n=0;n<8;n++){const c=clean(b.map(p=>p?p.c:-1));let changed=false;b=b.map((p,i)=>{if(!p)return null;if(p.c!==c.a[i])changed=true;return{...p,c:c.a[i]};});if(!changed)break;}return b;
 }

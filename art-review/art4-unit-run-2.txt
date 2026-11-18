@@ -1,0 +1,30 @@
+(node:10988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ one missing pixel connects a small foot to its body [90m(0.8793ms)[39m[39m
+[32m✔ remote single pixel is removed instead of drawing a long bridge [90m(0.1467ms)[39m[39m
+[32m✔ large detached anatomy is rejected rather than discarded [90m(0.3462ms)[39m[39m
+[32m✔ all39 piglet frames have a single connected animal silhouette [90m(19.658ms)[39m[39m
+(node:25356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ validator rejects seven-rule violations and permits eye/jump exceptions [90m(102.6945ms)[39m[39m
+[32m✔ 32-color palette and breed slots v1 [90m(1.8445ms)[39m[39m
+[32m✔ 32-color palette and breed slots -realistic [90m(0.9558ms)[39m[39m
+[32m✔ adult pig sheet validates pig_adult [90m(31.94ms)[39m[39m
+[32m✔ adult pig sheet validates pig_adult_realistic [90m(237.4223ms)[39m[39m
+[32m✔ adult pig sheet validates piglet [90m(14.2316ms)[39m[39m
+[32m✔ adult pig sheet validates piglet_realistic [90m(159.5866ms)[39m[39m
+[32m✔ piglet compatibility idle bodies fit the 14-18 by 11-14 pixel specification [90m(5.4873ms)[39m[39m
+{"pass":true,"cases":11}
+(node:19176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ tools\test-sprite-validate.cjs [90m(96.9424ms)[39m[39m
+[34mℹ tests 13[39m
+[34mℹ suites 0[39m
+[34mℹ pass 13[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 641.7993[39m
+(node:2520) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

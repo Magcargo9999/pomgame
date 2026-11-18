@@ -1,0 +1,158 @@
+(node:18496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ A2/A4 end day: +1 day, AP refilled [90m(11.2223ms)[39m[39m
+[32m✔ C1/C4 start: exactly 2 pigs, all species pig [90m(0.4587ms)[39m[39m
+[32m✔ D4 start capacity is 2 pens x 4 = 8 places (D28) [90m(1.1185ms)[39m[39m
+[32m✔ D4 total pen capacity can never exceed 30 (D28) [90m(3.0183ms)[39m[39m
+[32m✔ D2 litter overflow: no pen holds more weaned pigs than its capacity (D28) [90m(4.0311ms)[39m[39m
+[32m✔ D5 breeding allowed when full but warns (D28) [90m(2.6351ms)[39m[39m
+[32m✔ F2/F3 grade report next morning with a real grade code [90m(1.3732ms)[39m[39m
+[32m✔ G1/G9 no gene lab in the shop or facilities (D31) [90m(0.3203ms)[39m[39m
+[32m✔ G1 genotype and BV never appear in the view, even if gene_lab is bought (D31) [90m(0.7513ms)[39m[39m
+[32m✔ H1/H3 payday on day 28; on-time payment lowers the balance (D29) [90m(0.7355ms)[39m[39m
+[32m✔ H5 three consecutive misses forecloses (D27) [90m(0.6593ms)[39m[39m
+[32m✔ H5b full payment resets the miss count (D27) [90m(0.9329ms)[39m[39m
+[32m✔ H5a partial payment counts as missed (D27) [90m(0.595ms)[39m[39m
+[32m✔ J6 save round trip is lossless [90m(1.1113ms)[39m[39m
+[32m✔ K1 no Hangul in src/sim [90m(10.8297ms)[39m[39m
+(node:25108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ smoke: load, move, end day, reload
+  [32m✔ page loads without errors [90m(8.9294ms)[39m[39m
+  [32m✔ moving costs 0 AP (A5) [90m(2112.5492ms)[39m[39m
+  [32m✔ end day advances exactly one day and refills AP (A2, A4) [90m(405.0792ms)[39m[39m
+  [32m✔ auto-save survives reload (J1) [90m(68.9295ms)[39m[39m
+[32m✔ smoke: load, move, end day, reload [90m(3838.8145ms)[39m[39m
+▶ save file export and import (J3, J4, J5)
+  [32m✔ J3 export is JSON with a save version [90m(0.5516ms)[39m[39m
+  [32m✔ J4 import restores the exported game in a fresh profile [90m(43.4201ms)[39m[39m
+  [32m✔ J5 a corrupt file is refused and the game is untouched [90m(325.6905ms)[39m[39m
+[32m✔ save file export and import (J3, J4, J5) [90m(984.7365ms)[39m[39m
+(node:25864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ L3 manifest points pig.adult at the 32px pig_adult sheet (ART-4) [90m(899.5327ms)[39m[39m
+[32m✔ L3 the realistic 128px sheet is not referenced by the manifest or src/ui [90m(9.6331ms)[39m[39m
+[32m✔ L1 every sheet in the manifest passes sprite-validate [90m(462.6438ms)[39m[39m
+[32m✔ L3 the game loads the real pig sheet at 1280x720 [90m(209.7432ms)[39m[39m
+(node:24172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+UI RUN LOG ["day 25: paid 300000","day 27: shipped 1"] []
+[31m✖ UI run: day 1 to 57 by keyboard and mouse, both payments made [90m(28357.8608ms)[39m[39m
+(node:18316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+YEAR SUMMARY {"phase":"yearComplete","day":113,"cash":3333,"debt":8322708,"missed":0,"shipped":18,"reports":18,"grades":{"1":4,"2":9,"brand":0,"1+":1,"out":4},"maxHerd":8,"unfedPenDays":55,"minCash":3333,"paydays":["28:paid 300000 int 194000 missed 0","56:paid 500000 int 187880 missed 0","84:paid 700000 int 177638 missed 0","112:paid 900000 int 163190 missed 0"]}
+[32m✔ 1-year loop: scripted ordinary play reaches day 112 without foreclosure [90m(144.6152ms)[39m[39m
+[32m✔ 1-year loop is deterministic for a seed [90m(176.6839ms)[39m[39m
+(node:4140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ start state: 2 piglets, cash, debt, day 1 [90m(2.6194ms)[39m[39m
+[32m✔ same seed + same actions = same game; state is not mutated [90m(12.8155ms)[39m[39m
+[32m✔ save and load round trip [90m(2.9096ms)[39m[39m
+[32m✔ action points are spent and refused when empty [90m(1.7082ms)[39m[39m
+[32m✔ listActions reports disabled actions with a reason [90m(6.0302ms)[39m[39m
+[32m✔ places: 8 at start, piggery adds 22, cap 30, buying blocked when full [90m(1.3999ms)[39m[39m
+[32m✔ debt: minimum is auto-paid on payday, interest added [90m(17.6658ms)[39m[39m
+[32m✔ every minimum payment exceeds that season interest, so on-time payments shrink the balance [90m(0.1465ms)[39m[39m
+[32m✔ debt: misses must be consecutive; full payment incl. arrears resets the count; partial counts as a miss [90m(3.3034ms)[39m[39m
+[32m✔ genotype and breeding values never appear in the view (decision 31) [90m(0.9667ms)[39m[39m
+[32m✔ debt: early payments count toward the minimum [90m(1.8787ms)[39m[39m
+[32m✔ debt: a miss doubles that interest; 3 misses in a row = foreclosure [90m(3.4663ms)[39m[39m
+[32m✔ a full year ends in yearComplete [90m(22.1534ms)[39m[39m
+[32m✔ fed pigs reach market weight around day 40 and get graded [90m(14.1077ms)[39m[39m
+[32m✔ breeding produces a litter with pedigree and F [90m(11.7293ms)[39m[39m
+[32m✔ previews: breeding shows expected F and risk; mix shows fat colour and price [90m(1.3423ms)[39m[39m
+(node:25228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ rng is deterministic per seed [90m(1.2622ms)[39m[39m
+[32m✔ dominance follows loci.json order [90m(0.272ms)[39m[39m
+[32m✔ monohybrid Ss x Ss gives 1:2:1 genotypes and 3:1 phenotype [90m(31.9809ms)[39m[39m
+[32m✔ testcross Nn x nn gives 1:1 for RYR1 [90m(31.695ms)[39m[39m
+[32m✔ Berkshire x Duroc F2 gives red spotted at 1/16 (GDD 2.6) [90m(41.153ms)[39m[39m
+[32m✔ phenotypes: white masks, Berkshire points, spotted breed, patchwork, belt [90m(0.2576ms)[39m[39m
+[32m✔ buyable breeds express their look [90m(5.2921ms)[39m[39m
+[32m✔ mutation happens at roughly the set rate [90m(50.5067ms)[39m[39m
+[32m✔ breeding values: mean is parent average, Mendelian sampling sd shrinks with F [90m(60.6226ms)[39m[39m
+[32m✔ inbreeding coefficients from the pedigree (tabular method) [90m(0.4912ms)[39m[39m
+[32m✔ F risk bands (GDD 2.4) [90m(0.3422ms)[39m[39m
+(node:21228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ grade1 boundaries (GDD 1.1 table, lower bound inclusive, upper exclusive) [90m(0.6511ms)[39m[39m
+[32m✔ grade2 points: 11+ = 1+, 8+ = 1, else 2 [90m(0.1657ms)[39m[39m
+[32m✔ final grade is the lower of the two [90m(0.1399ms)[39m[39m
+[32m✔ PSE/DFD drop two steps, a defect one [90m(0.0946ms)[39m[39m
+[32m✔ brand cert sits above 1+ and needs IMF and white fat [90m(0.1249ms)[39m[39m
+(node:15844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ every registered species implements the module contract and has data [90m(1.9332ms)[39m[39m
+[32m✔ every breed names a registered species and covers its loci [90m(0.6784ms)[39m[39m
+[32m✔ animals carry their species into state and view [90m(4.0308ms)[39m[39m
+[32m✔ save version and migrations: a v1 save loads and plays on [90m(3.6048ms)[39m[39m
+(node:10456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ pig sheet matches SPRITE-SPEC layout (128x480, 15 rows) [90m(1.2994ms)[39m[39m
+[32m✔ adult sheet: binary alpha, marker colours only, feet on anchor row [90m(38.189ms)[39m[39m
+[32m✔ piglet sheet: binary alpha, marker colours only, feet on anchor row [90m(20.2344ms)[39m[39m
+[32m✔ recolour swaps marker colours per breed ramp [90m(0.6648ms)[39m[39m
+[32m✔ player sheet is 16x32 cells, 4 frames x 3 directions [90m(3.5212ms)[39m[39m
+[32m✔ map: start, gate, every pen and building door reachable on foot [90m(1.6344ms)[39m[39m
+[32m✔ integer scale: whole farm at 1280x720, follow camera in a small window [90m(0.4994ms)[39m[39m
+[32m✔ i18n: interpolation and every literal key used by the UI exists [90m(9.5845ms)[39m[39m
+[32m✔ no Korean text hard-coded in UI code or index.html [90m(7.3739ms)[39m[39m
+[32m✔ ko.json holds the 10 tone sample lines [90m(0.2951ms)[39m[39m
+[32m✔ every sim code the UI shows has a Korean string (events, errors, items, breeds, workers, stages) [90m(9.5501ms)[39m[39m
+[32m✔ appearance patterns from the sim map to a sprite layer and spot colours [90m(0.1438ms)[39m[39m
+[32m✔ ruling O5: UI never reads genotype or breeding values [90m(8.3706ms)[39m[39m
+(node:24920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ terrain atlas covers every requested kind, connection mask and gate state [90m(0.7593ms)[39m[39m
+[32m✔ every individual tile exactly matches its atlas cell [90m(24.3516ms)[39m[39m
+[32m✔ terrain palette, alpha, isolated pixels, outlines, seams and padding validate [90m(15.35ms)[39m[39m
+[32m✔ tile validator rejects a broken repeat seam [90m(23.5634ms)[39m[39m
+[32m✔ compound house tiles reconstruct the48px house without gaps [90m(2.2732ms)[39m[39m
+[32m✔ player dimensions, six animations and 18 frames validate [90m(9.395ms)[39m[39m
+[32m✔ player green clothing stays opaque when removing green background [90m(2.3359ms)[39m[39m
+[32m✔ player first idle bodies are28-30px tall and face directions have expected eyes [90m(2.8982ms)[39m[39m
+[32m✔ player walk has four distinct poses in each direction [90m(2.606ms)[39m[39m
+[32m✔ x8 exports are exact nearest-neighbor expansions [90m(152.523ms)[39m[39m
+[32m✔ player uses three shade steps per material and no more than12 colors [90m(4.0419ms)[39m[39m
+[32m✔ data-driven asset index points to existing sheets and metadata [90m(4.8153ms)[39m[39m
+(node:5556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ one missing pixel connects a small foot to its body [90m(0.8891ms)[39m[39m
+[32m✔ remote single pixel is removed instead of drawing a long bridge [90m(0.1622ms)[39m[39m
+[32m✔ large detached anatomy is rejected rather than discarded [90m(0.3513ms)[39m[39m
+[32m✔ all39 piglet frames have a single connected animal silhouette [90m(25.4414ms)[39m[39m
+(node:12012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ validator rejects seven-rule violations and permits eye/jump exceptions [90m(152.7714ms)[39m[39m
+[32m✔ 32-color palette and breed slots v1 [90m(1.7187ms)[39m[39m
+[32m✔ 32-color palette and breed slots -realistic [90m(1.6004ms)[39m[39m
+[32m✔ adult pig sheet validates pig_adult [90m(36.1105ms)[39m[39m
+[32m✔ adult pig sheet validates pig_adult_realistic [90m(552.9062ms)[39m[39m
+[32m✔ adult pig sheet validates piglet [90m(25.1158ms)[39m[39m
+[32m✔ adult pig sheet validates piglet_realistic [90m(208.2175ms)[39m[39m
+[32m✔ piglet compatibility idle bodies fit the 14-18 by 11-14 pixel specification [90m(8.5702ms)[39m[39m
+{"pass":true,"cases":11}
+(node:17360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32m✔ tools\test-sprite-validate.cjs [90m(139.032ms)[39m[39m
+[34mℹ tests 105[39m
+[34mℹ suites 0[39m
+[34mℹ pass 104[39m
+[34mℹ fail 1[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 28656.613[39m
+
+[31m✖ failing tests:[39m
+
+test at tests\e2e\ui-run.test.mjs:44:1
+[31m✖ UI run: day 1 to 57 by keyboard and mouse, both payments made [90m(28357.8608ms)[39m[39m
+  Error: blocked at 14,5 going left to 10,4
+      at walkTo [90m(file:///C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/[39mtests/e2e/ui-run.test.mjs:30:83[90m)[39m
+      at async TestContext.<anonymous> [90m(file:///C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/[39mtests/e2e/ui-run.test.mjs:82:9[90m)[39m
+  [90m    at async Test.run (node:internal/test_runner/test:1409:7)[39m
+  [90m    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)[39m
+(node:10636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

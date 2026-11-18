@@ -21,13 +21,13 @@
       32
     ],
     "bounds": [
-      8,
+      9,
       18,
       22,
       29
     ],
     "anchorTranslationY": 0,
-    "correctedPixels": 0
+    "correctedPixels": 3
   },
   "right": {
     "source": "right.source.png",
@@ -42,6 +42,6 @@
       29
     ],
     "anchorTranslationY": 0,
-    "correctedPixels": 13
+    "correctedPixels": 15
   }
 }
