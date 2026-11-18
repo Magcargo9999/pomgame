@@ -5,6 +5,7 @@ import { TILE, MAP_W, MAP_H, START, PENS, PEN_SIZE, walkable, objectAt, penFloor
 import { drawBackground, drawTroughs } from './tiles.js';
 import { makePigSheets, makePlayerSheet, recolorPixels, slotMap, CELL, ANCHOR, PLAYER_CELL, PLAYER_ANCHOR, sheetMeta } from './sprites.js';
 import { rampsFor, lookKey, layerFor } from './palettes.js';
+import { tintImported } from './hires-colors.js';
 
 const STEP_MS = 130;
 const KEYS = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
@@ -64,7 +65,9 @@ async function loadPigSheet(entry, scale) {
 // Sprite sheets load in parallel; main.js starts this before anything else so the
 // game is ready as soon as the strings are.
 async function loadImages(entries = {}) {
-  const loaded = await Promise.all(Object.entries(entries).map(async ([key, path]) => {
+  const loaded = await Promise.all(Object.entries(entries).map(async ([key, entry]) => {
+    const path = typeof entry === 'string' ? entry : entry?.sheet;
+    if (!path) return [key, null];
     try {
       return [key, await loadImage(`./assets/sprites/${path}`)];
     } catch {
@@ -76,24 +79,34 @@ async function loadImages(entries = {}) {
 
 export async function loadSprites() {
   const manifest = await loadManifest();
-  const [adult, piglet, farmer, tiles, buildings, deco, faces] = await Promise.all([
+  const environment = manifest.environment || {};
+  const select = (pattern) => Object.fromEntries(Object.entries(environment).filter(([key]) => pattern.test(key)));
+  const [adult, piglet, farmer, player, tiles, buildings, deco, faces] = await Promise.all([
     loadPigSheet(manifest.pig?.adult, 1),
     loadPigSheet(manifest.pig?.piglet, 0.6),
     loadSheet(manifest.player?.farmer),
-    loadImages(manifest.tiles),
-    loadImages(manifest.buildings),
-    loadImages(manifest.deco),
+    loadImages({ farmer: manifest.player }),
+    loadImages(manifest.tiles ?? select(/^(tile_|fence_|pen_sign$)/)),
+    loadImages(manifest.buildings ?? {
+      house: environment.bld_house, shed: environment.bld_shed,
+      piggery_t1: environment.bld_barn, dock: environment.bld_dock,
+    }),
+    loadImages(manifest.deco ?? select(/^(deco_|trough_)/)),
     loadImages(manifest.faces),
   ]);
-  return { adult, piglet, farmer, tiles, buildings, deco, faces };
+  return { adult, piglet, farmer, player: player.farmer, tiles, buildings, deco, faces, manifest };
 }
 
 export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
   const ctx = canvas.getContext('2d');
   const bg = document.createElement('canvas');
-  bg.width = MAP_W * TILE; bg.height = MAP_H * TILE;
   const sheets = await (sprites || loadSprites());
-  drawBackground(bg.getContext('2d'), sheets);
+  const artScale = sheets.manifest?.scale || 1;
+  bg.width = MAP_W * TILE * artScale;
+  bg.height = MAP_H * TILE * artScale;
+  const bgctx = bg.getContext('2d');
+  bgctx.scale(artScale, artScale);
+  drawBackground(bgctx, sheets);
   const player = { tx: START.x, ty: START.y, fx: START.x, fy: START.y, dir: 'down', moving: null, walkT: 0 };
   let fallbackPlayer;
   const held = [];
@@ -107,6 +120,7 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     const sh = sheets[kind], map = slotMap(rampsFor(look));
     const { c, x, d } = canvasPixels(sh.base);
     recolorPixels(d.data, map);
+    if(sh.meta.imported)tintImported(d.data,c.width,sh.meta,look,rampsFor(look));
     x.putImageData(d, 0, 0);
     const layer = sh.layers[layerFor(look.pattern)];
     if (layer) {
@@ -240,7 +254,7 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', () => { held.length = 0; });
   const toWorld = (e) => {
-    const r = canvas.getBoundingClientRect(), k = canvas.width / r.width;
+    const r = canvas.getBoundingClientRect(), k = canvas.width / r.width / artScale;
     return [(e.clientX - r.left) * k + cam.x, (e.clientY - r.top) * k + cam.y];
   };
   canvas.addEventListener('click', (e) => {
@@ -264,6 +278,7 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     canvas.height = Math.max(1, Math.floor((host.height * dpr) / scale));
     canvas.style.width = `${(canvas.width * scale) / dpr}px`;
     canvas.style.height = `${(canvas.height * scale) / dpr}px`;
+    canvas.width *= artScale; canvas.height *= artScale;
   }
   new ResizeObserver(resize).observe(canvas.parentElement);
   resize();
@@ -276,14 +291,15 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     const an = m.anims[`${a.anim}_${a.dir}`] || meta.anims[`${a.anim}_${a.dir}`];
     const f = Math.floor(a.t / an.ms) % an.frames;
     const [cw, ch] = m.cell || [CELL, CELL], [ax, ay] = m.anchor || ANCHOR;
+    const s=m.scale || 1;
     const x = Math.round(a.x) - cam.x, y = Math.round(a.y) - cam.y;
     ctx.fillStyle = 'rgba(40,30,20,0.25)';
     ctx.fillRect(x - 9, y - 1, 18, 2);
     if (a.flip) {
       ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1);
-      ctx.drawImage(sh, f * cw, an.row * ch, cw, ch, -(cw - ax), y - ay, cw, ch);
+      ctx.drawImage(sh, f * cw, an.row * ch, cw, ch, -(cw - ax)/s, y - ay/s, cw/s, ch/s);
       ctx.restore();
-    } else ctx.drawImage(sh, f * cw, an.row * ch, cw, ch, x - ax, y - ay, cw, ch);
+    } else ctx.drawImage(sh, f * cw, an.row * ch, cw, ch, x - ax/s, y - ay/s, cw/s, ch/s);
     if (a.anim === 'sleep') { ctx.fillStyle = '#ffffff'; ctx.font = '8px monospace'; ctx.fillText('z', x + 8, y - 18 - (Math.floor(a.t / 600) % 2) * 2); }
     if (a.pig.condition === 'sick') { ctx.fillStyle = '#e04a4a'; ctx.fillRect(x - 1, y - 30, 2, 5); ctx.fillRect(x - 1, y - 24, 2, 2); }
   }
@@ -295,6 +311,16 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     }
   }
   function drawPlayer() {
+    const x = Math.round(player.fx * TILE + 8) - cam.x;
+    const y = Math.round(player.fy * TILE + 15) - cam.y;
+    ctx.fillStyle = 'rgba(40,30,20,0.25)';
+    ctx.fillRect(x - 5, y - 1, 10, 2);
+    if (sheets.player) {
+      const { cell: [cw, ch], anchor: [px, py], directions } = sheets.manifest.player;
+      ctx.drawImage(sheets.player, 0, directions[player.dir] * ch, cw, ch,
+        x - px / artScale, y - py / artScale, cw / artScale, ch / artScale);
+      return;
+    }
     const farmer = sheets.farmer;
     const meta = farmer?.meta;
     const motion = player.moving ? 'walk' : 'idle';
@@ -310,10 +336,6 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
       ? Math.floor(elapsed / anim.ms) % anim.frames
       : Math.floor(player.walkT / STEP_MS) % 4;
     const flip = anim ? mirrored?.flipX : player.dir === 'left';
-    const x = Math.round(player.fx * TILE + 8) - cam.x;
-    const y = Math.round(player.fy * TILE + 15) - cam.y;
-    ctx.fillStyle = 'rgba(40,30,20,0.25)';
-    ctx.fillRect(x - 5, y - 1, 10, 2);
     if (flip) {
       ctx.save();
       ctx.translate(x, 0);
@@ -336,12 +358,13 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     last = now;
     updatePlayer(dt);
     for (const a of actors.values()) updateActor(a, dt);
-    cam = camera(canvas.width, canvas.height, player.fx * TILE + 8, player.fy * TILE + 8);
+    cam = camera(canvas.width/artScale, canvas.height/artScale, player.fx * TILE + 8, player.fy * TILE + 8);
+    ctx.setTransform(artScale,0,0,artScale,0,0);
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#2f5e30';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(bg, -cam.x, -cam.y);
-    drawTroughs(ctx, sheets.deco, view?.pens, cam);
+    ctx.fillRect(0, 0, canvas.width / artScale, canvas.height / artScale);
+    ctx.drawImage(bg, -cam.x, -cam.y, MAP_W * TILE, MAP_H * TILE);
+    drawTroughs(ctx, sheets.deco, view?.pens, cam, artScale);
     drawLockedPens();
     const drawList = [...actors.values()].map((a) => ({ y: a.y, fn: () => drawPig(a) }));
     drawList.push({ y: player.fy * TILE + 15, fn: drawPlayer });
@@ -358,5 +381,6 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     playerPos() { return { x: player.tx, y: player.ty, dir: player.dir }; },
     get player() { return { tx: player.tx, ty: player.ty, x: player.tx, y: player.ty, dir: player.dir, moving: !!player.moving }; },
     get usingRealSprites() { return { adult: sheets.adult.real, piglet: sheets.piglet.real }; },
+    paintPortrait(canvas,pig) {const kind=isPiglet(pig)?'piglet':'adult',m=sheets[kind].meta,[w,h]=m.cell;canvas.width=192;canvas.height=192;const x=canvas.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,192,192);x.drawImage(tintedSheet(kind,pig.appearance),0,0,w,h,0,0,192,192);},
   };
 }

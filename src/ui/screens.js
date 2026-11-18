@@ -128,7 +128,7 @@ export function makeScreens(app, faces = {}) {
     const roleInfo = find(acts, 'setRole');
     const breedInfo = find(acts, 'breed');
     const body = h('div', { class: 'detail' },
-      h('canvas', { class: 'portrait', width: 32, height: 32, 'aria-hidden': 'true' }),
+      h('canvas', { class: 'portrait', width: 192, height: 192, 'aria-hidden': 'true' }),
       h('dl', {}, rows.map(([k, v]) => [h('dt', { text: t(k) }), h('dd', {}, v)])),
       p.pregnantDueDay ? h('p', { class: 'note', text: t('pig.pregnant', { n: p.pregnantDueDay - V().day }) }) : null,
       p.withdrawalDays ? h('p', { class: 'note warn', text: t('pig.withdrawal', { n: p.withdrawalDays }) }) : null,

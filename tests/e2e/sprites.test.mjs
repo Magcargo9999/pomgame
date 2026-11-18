@@ -1,5 +1,4 @@
-// L1/L3: the game uses the real 32px pig sheet (god art decision, GDD D10), it passes the
-// validator, and the dropped 128px realistic sheet is never referenced.
+// Check the imported sheets, logical coordinates, and browser asset loading.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,12 +10,14 @@ const MANIFEST = path.join(ROOT, 'assets', 'sprites', 'manifest.json');
 const skip = fs.existsSync(MANIFEST) ? false : 'assets/sprites/manifest.json missing';
 const manifest = skip ? {} : JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 
-test('L3 manifest points pig.adult at the 32px pig_adult sheet (ART-4)', { skip }, () => {
+test('L3 manifest scales original art to 4x while keeping 32 logical pig units', { skip }, () => {
   const e = manifest.pig?.adult;
   assert.ok(e && e.sheet && e.meta, `pig.adult not set: ${JSON.stringify(e)}`);
-  assert.match(e.sheet, /pig_adult\.png$/);
+  assert.match(e.sheet, /pig_adult-hires\.png$/);
   const meta = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'sprites', e.meta), 'utf8'));
-  assert.deepEqual(meta.cell, [32, 32], 'adult pig cell must be 32x32 (SPRITE-SPEC)');
+  assert.equal(manifest.scale,4);
+  assert.deepEqual(meta.cell, [32*manifest.scale, 32*manifest.scale]);
+  assert.equal(meta.scale,manifest.scale);
 });
 
 test('L3 the realistic 128px sheet is not referenced by the manifest or src/ui', { skip }, () => {
@@ -28,30 +29,14 @@ test('L3 the realistic 128px sheet is not referenced by the manifest or src/ui',
   }
 });
 
-test('L1 manifest animation sheets validate and static sprites decode', { skip }, () => {
-  const validator = path.join(ROOT, 'tools', 'sprite-validate.cjs');
-  if (!fs.existsSync(validator)) return assert.fail('tools/sprite-validate.cjs missing');
-  const require = createRequire(import.meta.url);
-  const validate = require(validator);
-  const { decode } = require(path.join(ROOT, 'tools', 'png.cjs'));
-  const palette = (m) => JSON.parse(fs.readFileSync(path.join(ROOT, m.palette || 'docs/art/palette.json'), 'utf8'));
-  for (const [species, entries] of Object.entries(manifest)) {
-    if (species.startsWith('_')) continue;
-    for (const [name, e] of Object.entries(entries ?? {})) {
-      if (!e) continue;
-      if (typeof e === 'string') {
-        const file = path.join(ROOT, 'assets', 'sprites', e);
-        const { w, h, p } = decode(file);
-        assert.ok(w > 0 && h > 0 && p.some((value, i) => i % 4 === 3 && value === 255), e);
-        for (let i = 3; i < p.length; i += 4) assert.ok(p[i] === 0 || p[i] === 255, e);
-        continue;
-      }
-      const meta = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'sprites', e.meta), 'utf8'));
-      const sheets = [[e.sheet, false], ...Object.values(e.layers ?? {}).map((p) => [p, true])];
-      for (const [p, layer] of sheets) {
-        const r = validate(path.join(ROOT, 'assets', 'sprites', p), meta, palette(meta), layer);
-        assert.ok(r.pass, `${species}.${name} ${p}: ${JSON.stringify(r.failures ?? r.errors ?? r)}`);
-      }
+test('L1 high-resolution pig sheets and layers match their animation metadata', { skip }, () => {
+  const validate = createRequire(import.meta.url)('../../tools/validate-hires.cjs');
+  for (const entry of Object.values(manifest.pig)) {
+    const meta = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/sprites', entry.meta), 'utf8'));
+    const sheets = [[entry.sheet, false], ...Object.values(entry.layers).map((file) => [file, true])];
+    for (const [file, layer] of sheets) {
+      const result = validate(path.join(ROOT, 'assets/sprites', file), meta, layer);
+      assert.ok(result.pass, `${file}: ${JSON.stringify(result.issues)}`);
     }
   }
 });
@@ -71,8 +56,37 @@ test('L3 the game loads the real pig sheet at 1280x720', { skip: skipBrowser }, 
     await page.goto(srv.url);
     await page.waitForFunction(() => document.body.dataset.ready === 'true', null, { timeout: 15_000 });
     assert.deepEqual(warns, [], 'sprite fallback used');
-    assert.ok(fetched.includes('200 pig/pig_adult.png'), `pig_adult.png not loaded; fetched: ${JSON.stringify(fetched)}`);
+    assert.ok(fetched.includes('200 pig/pig_adult-hires.png'), `hires pig not loaded; fetched: ${JSON.stringify(fetched)}`);
+    for (const file of [
+      'player/player-hires.png', 'external/bld_barn.png', 'external/tile_grass_1.png',
+      'external/deco_barrel.png', 'external/trough_feed_empty.png', 'external/trough_feed_full.png',
+      ...['creditor', 'vet', 'feed', 'auction', 'worker'].map((tab) => manifest.faces[tab].sheet),
+    ]) {
+      assert.ok(fetched.includes('200 ' + file), file + ' was not loaded');
+    }
     assert.ok(!fetched.some((f) => /realistic/.test(f)), 'realistic sheet fetched');
     await shot(page, 'sprites-ingame-1280x720');
   } catch (e) { await shot(page, 'sprites-ingame-FAILED'); throw e; } finally { await page.close(); }
+});
+
+test('L4 high resolution backing preserves clicks at small viewport and device scale 2; faces load at 192px', {skip:skipBrowser}, async()=>{
+  for(const [width,height,deviceScaleFactor]of [[420,740,1],[1280,720,2]]){
+    const page=await browser.newPage({viewport:{width,height},deviceScaleFactor});
+    try{
+      await page.goto(srv.url);await page.waitForFunction(()=>document.body.dataset.ready==='true');
+      const click=await page.evaluate(async()=>{
+        const {camera,TILE}=await import('/src/ui/map.js'),c=document.querySelector('#world'),r=c.getBoundingClientRect(),s=window.__ranch.app.artManifest.scale;
+        const p=window.__ranch.world.player,cam=camera(c.width/s,c.height/s,p.x*TILE+8,p.y*TILE+8),k=r.width/(c.width/s);
+        return{x:r.left+(64-cam.x)*k,y:r.top+(48-cam.y)*k,smoothing:c.getContext('2d').imageSmoothingEnabled};
+      });
+      assert.equal(click.smoothing,false);await page.mouse.click(click.x,click.y);
+      await page.waitForFunction(()=>!document.querySelector('#popup').hidden);
+      await page.keyboard.press('Escape');await page.locator('#btn-town').click();
+      await page.waitForFunction(()=>document.querySelector('.npc-portrait')?.naturalWidth===192);
+      assert.equal(await page.locator('#hud-face').evaluate(el=>el.naturalWidth),192);
+      await page.keyboard.press('Escape');
+      await page.evaluate(()=>{const p=window.__ranch.app.view.pigs[0];window.__ranch.screens.pigDetail(p.id);});
+      assert.equal(await page.locator('canvas.portrait').evaluate(c=>c.width),192);
+    }finally{await page.close();}
+  }
 });

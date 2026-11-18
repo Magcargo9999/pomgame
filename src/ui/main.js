@@ -149,6 +149,7 @@ const app = {
   toast,
   paintPortrait(canvas, pig) {
     if (!canvas) return;
+    if (world?.paintPortrait) return world.paintPortrait(canvas,pig);
     const small = pig.stage === 'suckling' || pig.stage === 'nursery';
     const g = (portraitSheets[small ? 1 : 0] ||= makePigSheets(small ? 0.6 : 1));
     const layer = g.layers[layerFor(pig.appearance.pattern)];
@@ -205,6 +206,8 @@ async function boot() {
   app.state = loadSaved();
   app.view = sim.getView(app.state);
   const art = await sprites;
+  app.artManifest = art.manifest;
+  if (art.faces.player) $('hud-face').src = art.faces.player.src;
   screens = makeScreens(app, art.faces);
   const canvas = $('world');
   world = await createWorld(canvas, {

@@ -24,17 +24,17 @@ const DECORATIONS = [
   ['stump', 33, 3, C.wood2], ['water_pump', 12, 7, C.metal2],
   ['wheelbarrow', 24, 3, C.wood],
 ];
-const GRASS = ['grass_1', 'grass_2', 'grass_3', 'clover', 'grass_flower_white', 'grass_flower_pink'];
+const GRASS = ['grass_1', 'grass_2', 'clover', 'grass_flower_white', 'grass_flower_pink'];
 const CORNERS = ['tl', 'tr', 'bl', 'br'];
 const isPath = (kind) => kind === 'p' || kind === 'e' || kind === 'G';
 
-function draw(ctx, image, x, y) {
+function draw(ctx, image, x, y, scale) {
   if (!image) return false;
-  ctx.drawImage(image, x, y);
+  ctx.drawImage(image, x, y, image.width / scale, image.height / scale);
   return true;
 }
 
-function drawPath(ctx, tiles, tx, ty, x, y) {
+function drawPath(ctx, tiles, tx, ty, x, y, scale) {
   const top = isPath(MAP.t[ty - 1]?.[tx]) ? 1 : 0;
   const bottom = isPath(MAP.t[ty + 1]?.[tx]) ? 1 : 2;
   const left = isPath(MAP.t[ty][tx - 1]) ? 1 : 0;
@@ -45,7 +45,7 @@ function drawPath(ctx, tiles, tx, ty, x, y) {
   const half = TILE / 2;
   parts.forEach((image, i) => {
     const dx = (i % 2) * half, dy = Math.floor(i / 2) * half;
-    ctx.drawImage(image, dx, dy, half, half, x + dx, y + dy, half, half);
+    ctx.drawImage(image, dx * scale, dy * scale, half * scale, half * scale, x + dx, y + dy, half, half);
   });
   return true;
 }
@@ -58,10 +58,10 @@ function terrainKey(kind, x, y, hash) {
   }
   if (kind === 'm') return hash % 13 === 0 ? 'tile_mud' : 'tile_penfloor_' + (1 + hash % 2);
   if (kind === 'f') return 'tile_penfloor_1';
-  return 'tile_' + GRASS[hash % 19 < 3 ? 3 + hash % 19 : hash % 3];
+  return 'tile_' + GRASS[hash % 19 < 3 ? 2 + hash % 19 : (hash >>> 4) % 2];
 }
 
-function drawFence(ctx, tiles, r, pen) {
+function drawFence(ctx, tiles, r, pen, scale) {
   for (let row = 0; row < PEN_SIZE; row++) for (let col = 0; col < PEN_SIZE; col++) {
     const end = PEN_SIZE - 1;
     const horizontal = row === 0 || row === end;
@@ -72,8 +72,8 @@ function drawFence(ctx, tiles, r, pen) {
     if (open) {
       const left = tiles.fence_gate_open_left, right = tiles.fence_gate_open_right;
       if (left && right) {
-        ctx.drawImage(left, 0, 0, 8, TILE, x, y, 8, TILE);
-        ctx.drawImage(right, 8, 0, 8, TILE, x + 8, y, 8, TILE);
+        ctx.drawImage(left, 0, 0, 8 * scale, TILE * scale, x, y, 8, TILE);
+        ctx.drawImage(right, 8 * scale, 0, 8 * scale, TILE * scale, x + 8, y, 8, TILE);
       } else {
         r(x, y + 2, 3, 12, C.wood2);
         r(x + 13, y + 2, 3, 12, C.wood2);
@@ -83,7 +83,12 @@ function drawFence(ctx, tiles, r, pen) {
     const key = horizontal && vertical
       ? 'fence_corner_' + CORNERS[(row === end ? 2 : 0) + (col === end ? 1 : 0)]
       : horizontal ? 'fence_h' : 'fence_v';
-    if (draw(ctx, tiles[key], x, y)) continue;
+    const image = tiles[key];
+    if (image && key === 'fence_h') {
+      ctx.drawImage(image, x, y, TILE, TILE);
+      continue;
+    }
+    if (draw(ctx, image, x, y, scale)) continue;
     if (horizontal) {
       r(x, y + 8, TILE, 3, C.wood);
       r(x, y + 13, TILE, 2, C.wood2);
@@ -92,19 +97,19 @@ function drawFence(ctx, tiles, r, pen) {
     r(x + 9, y + 2, 1, vertical ? TILE - 2 : 13, C.wood2);
   }
   const x = (pen.x + 3) * TILE, y = pen.y * TILE;
-  if (!draw(ctx, tiles.pen_sign, x, y)) {
+  if (!draw(ctx, tiles.pen_sign, x, y, scale)) {
     r(x + 4, y + 1, 8, 6, C.wood3);
     r(x + 7, y + 7, 2, 6, C.wood2);
   }
 }
 
-export function drawTroughs(ctx, deco = {}, pens = [], cam) {
+export function drawTroughs(ctx, deco = {}, pens = [], cam, scale = 1) {
   for (const pen of PENS) {
     const x = (pen.x + 1) * TILE - cam.x;
     const y = (pen.y + PEN_SIZE - 2) * TILE - cam.y;
     const feed = pens[pen.slot]?.fedToday ? 'trough_feed_full' : 'trough_feed_empty';
     for (const [key, dx] of [[feed, 0], ['trough_water', TILE * 2]]) {
-      if (draw(ctx, deco[key], x + dx, y)) continue;
+      if (draw(ctx, deco[key], x + dx, y, scale)) continue;
       ctx.fillStyle = C.metal2;
       ctx.fillRect(x + dx + 4, y + 2, 20, 7);
       ctx.fillStyle = key === 'trough_water' ? C.window : key === 'trough_feed_full' ? C.straw : C.metal;
@@ -113,13 +118,23 @@ export function drawTroughs(ctx, deco = {}, pens = [], cam) {
   }
 }
 
-export function drawBackground(ctx, { tiles = {}, buildings = {}, deco = {} } = {}) {
+export function drawBackground(ctx, { tiles = {}, buildings = {}, deco = {}, manifest } = {}) {
+  const scale = manifest?.scale || 1;
   ctx.imageSmoothingEnabled = false;
   const r = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
   for (let ty = 0; ty < MAP_H; ty++) for (let tx = 0; tx < MAP_W; tx++) {
     const k = MAP.t[ty][tx], x = tx * TILE, y = ty * TILE, h = hash(tx, ty);
     r(x, y, TILE, TILE, C.grass);
-    if (isPath(k) ? drawPath(ctx, tiles, tx, ty, x, y) : draw(ctx, tiles[terrainKey(k, tx, ty, h)], x, y)) continue;
+    const ground = tiles[terrainKey(k, tx, ty, h)];
+    if (isPath(k)) {
+      if (drawPath(ctx, tiles, tx, ty, x, y, scale)) continue;
+    } else if (ground && scale > 1 && k !== 'h') {
+      // Crop away the transparent matte and shaded rim of the source tiles.
+      const inset = 3 * scale;
+      ctx.drawImage(ground, inset, inset, ground.width - 2 * inset, ground.height - 2 * inset,
+        x, y, TILE, TILE);
+      continue;
+    } else if (draw(ctx, ground, x, y, scale)) continue;
     if (k === 'g' || k === 'b') {
       if (h % 3 === 0) { r(x + (h % 11), y + ((h >> 4) % 12), 1, 2, C.grass2); r(x + (h % 11) + 2, y + ((h >> 4) % 12) + 1, 1, 2, C.grass2); }
       if (h % 7 === 0) r(x + ((h >> 8) % 13), y + ((h >> 12) % 13), 2, 1, C.grass3);
@@ -139,14 +154,14 @@ export function drawBackground(ctx, { tiles = {}, buildings = {}, deco = {} } = 
       if (h % 5 === 0) r(x + ((h >> 6) % 12), y + ((h >> 9) % 12), 2, 2, C.floor2);
     }
   }
-  for (const pen of PENS) drawFence(ctx, tiles, r, pen);
+  for (const pen of PENS) drawFence(ctx, tiles, r, pen, scale);
   for (const b of [...BUILDINGS, PIGGERY]) {
-    if (!draw(ctx, buildings[b.id], b.x * TILE, b.y * TILE)) drawBuilding(b, r);
+    if (!draw(ctx, buildings[b.id], b.x * TILE, b.y * TILE, scale)) drawBuilding(b, r);
   }
   for (const [key, tx, ty, color] of DECORATIONS) {
     const x = tx * TILE, y = (ty + 1) * TILE;
     const image = deco['deco_' + key];
-    if (image) draw(ctx, image, x, y - image.height);
+    if (image) draw(ctx, image, x, y - image.height / scale, scale);
     else {
       r(x + 4, y - 7, 8, 5, color);
       r(x + 6, y - 9, 4, 2, color);
@@ -156,7 +171,7 @@ export function drawBackground(ctx, { tiles = {}, buildings = {}, deco = {} } = 
   const gx = GATE.x * TILE, gy = GATE.y * TILE;
   r(gx + 1, gy - 6, 3, 22, C.wood2); r(gx + 12, gy - 6, 3, 22, C.wood2);
   r(gx + 1, gy - 6, 14, 3, C.wood3);
-  if (draw(ctx, tiles.pen_sign, gx, gy - 8)) return;
+  if (draw(ctx, tiles.pen_sign, gx, gy - 8, scale)) return;
   r(gx + 4, gy - 2, 8, 6, C.wall); r(gx + 5, gy - 1, 6, 1, C.wood2); r(gx + 5, gy + 1, 4, 1, C.wood2);
 }
 

@@ -1,106 +1,528 @@
 {
-  "_doc": "Real sprite sheets the game should load (SPRITE-SPEC). Add an entry when a sheet lands; missing entries use code-drawn placeholders. Paths are relative to assets/sprites/. The 128px realistic sheet is out of the prototype (decision 33): do not reference it.",
+  "_doc": "Source pixels are 4x logical pixels. Gameplay remains on the 16-unit grid. External originals are imported by tools/import-hires.cjs; legacy palette limits apply only to legacy art.",
   "pig": {
     "adult": {
-      "sheet": "pig/pig_adult.png",
-      "meta": "pig/pig_adult.json",
+      "sheet": "pig/pig_adult-hires.png",
+      "meta": "pig/pig_adult-hires.json",
       "layers": {
-        "belt": "pig/pig_adult.belt.png",
-        "spots": "pig/pig_adult.spots.png",
-        "points": "pig/pig_adult.points.png"
+        "belt": "pig/pig_adult-hires.belt.png",
+        "spots": "pig/pig_adult-hires.spots.png",
+        "points": "pig/pig_adult-hires.points.png"
       }
     },
     "piglet": {
-      "sheet": "pig/piglet.png",
-      "meta": "pig/piglet.json",
+      "sheet": "pig/piglet-hires.png",
+      "meta": "pig/piglet-hires.json",
       "layers": {
-        "belt": "pig/piglet.belt.png",
-        "spots": "pig/piglet.spots.png",
-        "points": "pig/piglet.points.png"
+        "belt": "pig/piglet-hires.belt.png",
+        "spots": "pig/piglet-hires.spots.png",
+        "points": "pig/piglet-hires.points.png"
       }
     }
   },
-  "player": {
-    "farmer": {
-      "sheet": "player/player_import.png",
-      "meta": "player/player.json"
+  "scale": 4,
+  "environment": {
+    "bld_dock": {
+      "sheet": "external/bld_dock.png",
+      "size": [
+        80,
+        48
+      ]
     },
-    "down": "player/player_base_down.png",
-    "up": "player/player_base_up.png",
-    "right": "player/player_base_right.png",
-    "left": "player/player_base_left.png"
+    "bld_house": {
+      "sheet": "external/bld_house.png",
+      "size": [
+        64,
+        48
+      ]
+    },
+    "bld_shed": {
+      "sheet": "external/bld_shed.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "deco_barrel": {
+      "sheet": "external/deco_barrel.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_bucket": {
+      "sheet": "external/deco_bucket.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_bush": {
+      "sheet": "external/deco_bush.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_crate": {
+      "sheet": "external/deco_crate.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_feedsack": {
+      "sheet": "external/deco_feedsack.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_flowers_pink": {
+      "sheet": "external/deco_flowers_pink.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_flowers_white": {
+      "sheet": "external/deco_flowers_white.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_haybale": {
+      "sheet": "external/deco_haybale.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_haypile": {
+      "sheet": "external/deco_haypile.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_rock": {
+      "sheet": "external/deco_rock.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_stump": {
+      "sheet": "external/deco_stump.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_water_pump": {
+      "sheet": "external/deco_water_pump.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "deco_wheelbarrow": {
+      "sheet": "external/deco_wheelbarrow.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_corner_bl": {
+      "sheet": "external/fence_corner_bl.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_corner_br": {
+      "sheet": "external/fence_corner_br.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_corner_tl": {
+      "sheet": "external/fence_corner_tl.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_corner_tr": {
+      "sheet": "external/fence_corner_tr.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_gate_closed": {
+      "sheet": "external/fence_gate_closed.png",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "fence_gate_open_left": {
+      "sheet": "external/fence_gate_open_left.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_gate_open_right": {
+      "sheet": "external/fence_gate_open_right.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "fence_h": {
+      "sheet": "external/fence_h.png",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "fence_v": {
+      "sheet": "external/fence_v.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "pen_sign": {
+      "sheet": "external/pen_sign.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "piglet_base_right": {
+      "sheet": "external/piglet_base_right.png",
+      "size": [
+        32,
+        32
+      ]
+    },
+    "pig_adult_base_right": {
+      "sheet": "external/pig_adult_base_right.png",
+      "size": [
+        32,
+        32
+      ]
+    },
+    "tile_clover": {
+      "sheet": "external/tile_clover.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_grass_1": {
+      "sheet": "external/tile_grass_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_grass_2": {
+      "sheet": "external/tile_grass_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_grass_flower_pink": {
+      "sheet": "external/tile_grass_flower_pink.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_grass_flower_white": {
+      "sheet": "external/tile_grass_flower_white.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_mud": {
+      "sheet": "external/tile_mud.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_center": {
+      "sheet": "external/tile_path_center.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_edge_left": {
+      "sheet": "external/tile_path_edge_left.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_edge_right": {
+      "sheet": "external/tile_path_edge_right.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_penfloor_1": {
+      "sheet": "external/tile_penfloor_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_penfloor_2": {
+      "sheet": "external/tile_penfloor_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "trough_feed_empty": {
+      "sheet": "external/trough_feed_empty.png",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "trough_feed_full": {
+      "sheet": "external/trough_feed_full.png",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "trough_water": {
+      "sheet": "external/trough_water.png",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_hedge": {
+      "sheet": "external/tile_hedge.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_full": {
+      "sheet": "external/tile_path_full.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "bld_barn": {
+      "sheet": "external/bld_barn.png",
+      "size": [
+        64,
+        48
+      ]
+    },
+    "tile_path_0_0": {
+      "sheet": "external/tile_path_0_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_0_0": {
+      "sheet": "external/tile_hedge_0_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_0_1": {
+      "sheet": "external/tile_path_0_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_0_1": {
+      "sheet": "external/tile_hedge_0_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_0_2": {
+      "sheet": "external/tile_path_0_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_0_2": {
+      "sheet": "external/tile_hedge_0_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_1_0": {
+      "sheet": "external/tile_path_1_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_1_0": {
+      "sheet": "external/tile_hedge_1_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_1_1": {
+      "sheet": "external/tile_path_1_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_1_1": {
+      "sheet": "external/tile_hedge_1_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_1_2": {
+      "sheet": "external/tile_path_1_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_1_2": {
+      "sheet": "external/tile_hedge_1_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_2_0": {
+      "sheet": "external/tile_path_2_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_2_0": {
+      "sheet": "external/tile_hedge_2_0.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_2_1": {
+      "sheet": "external/tile_path_2_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_2_1": {
+      "sheet": "external/tile_hedge_2_1.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_path_2_2": {
+      "sheet": "external/tile_path_2_2.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile_hedge_2_2": {
+      "sheet": "external/tile_hedge_2_2.png",
+      "size": [
+        16,
+        16
+      ]
+    }
   },
-  "buildings": {
-    "house": "buildings/bld_house.png",
-    "shed": "buildings/bld_shed.png",
-    "piggery_t1": "buildings/bld_piggery_t1.png",
-    "dock": "buildings/bld_dock.png"
-  },
-  "tiles": {
-    "tile_grass_1": "tiles/tile_grass_1.png",
-    "tile_grass_2": "tiles/tile_grass_2.png",
-    "tile_grass_3": "tiles/tile_grass_3.png",
-    "tile_clover": "tiles/tile_clover.png",
-    "tile_grass_flower_white": "tiles/tile_grass_flower_white.png",
-    "tile_grass_flower_pink": "tiles/tile_grass_flower_pink.png",
-    "tile_mud": "tiles/tile_mud.png",
-    "tile_penfloor_1": "tiles/tile_penfloor_1.png",
-    "tile_dirt": "tiles/tile_dirt.png",
-    "tile_penfloor_2": "tiles/tile_penfloor_2.png",
-    "tile_path_0_0": "tiles/tile_path_0_0.png",
-    "tile_path_0_1": "tiles/tile_path_0_1.png",
-    "tile_path_0_2": "tiles/tile_path_0_2.png",
-    "tile_path_1_0": "tiles/tile_path_1_0.png",
-    "tile_path_1_1": "tiles/tile_path_1_1.png",
-    "tile_path_1_2": "tiles/tile_path_1_2.png",
-    "tile_path_2_0": "tiles/tile_path_2_0.png",
-    "tile_path_2_1": "tiles/tile_path_2_1.png",
-    "tile_path_2_2": "tiles/tile_path_2_2.png",
-    "tile_path_9": "tiles/tile_path_9.png",
-    "tile_hedge_0_0": "tiles/tile_hedge_0_0.png",
-    "tile_hedge_0_1": "tiles/tile_hedge_0_1.png",
-    "tile_hedge_0_2": "tiles/tile_hedge_0_2.png",
-    "tile_hedge_1_0": "tiles/tile_hedge_1_0.png",
-    "tile_hedge_1_1": "tiles/tile_hedge_1_1.png",
-    "tile_hedge_1_2": "tiles/tile_hedge_1_2.png",
-    "tile_hedge_2_0": "tiles/tile_hedge_2_0.png",
-    "tile_hedge_2_1": "tiles/tile_hedge_2_1.png",
-    "tile_hedge_2_2": "tiles/tile_hedge_2_2.png",
-    "tile_hedge_9": "tiles/tile_hedge_9.png",
-    "fence_h": "tiles/fence_h.png",
-    "fence_v": "tiles/fence_v.png",
-    "fence_corner_tl": "tiles/fence_corner_tl.png",
-    "fence_corner_tr": "tiles/fence_corner_tr.png",
-    "fence_corner_bl": "tiles/fence_corner_bl.png",
-    "fence_corner_br": "tiles/fence_corner_br.png",
-    "fence_gate_closed": "tiles/fence_gate_closed.png",
-    "fence_gate_open_left": "tiles/fence_gate_open_left.png",
-    "fence_gate_open_right": "tiles/fence_gate_open_right.png",
-    "pen_sign": "tiles/pen_sign.png"
+  "player": {
+    "sheet": "player/player-hires.png",
+    "cell": [
+      64,
+      128
+    ],
+    "anchor": [
+      32,
+      124
+    ],
+    "directions": {
+      "down": 0,
+      "up": 1,
+      "right": 2,
+      "left": 3
+    }
   },
   "faces": {
-    "creditor": "faces/npc_creditor_face.png",
-    "vet": "faces/npc_vet_face.png",
-    "feed": "faces/npc_feed_face.png",
-    "auction": "faces/npc_auction_face.png",
-    "worker": "faces/npc_worker_face.png"
-  },
-  "deco": {
-    "deco_barrel": "deco/deco_barrel.png",
-    "deco_bucket": "deco/deco_bucket.png",
-    "deco_bush": "deco/deco_bush.png",
-    "deco_crate": "deco/deco_crate.png",
-    "deco_feedsack": "deco/deco_feedsack.png",
-    "deco_flowers_pink": "deco/deco_flowers_pink.png",
-    "deco_flowers_white": "deco/deco_flowers_white.png",
-    "deco_haybale": "deco/deco_haybale.png",
-    "deco_haypile": "deco/deco_haypile.png",
-    "deco_rock": "deco/deco_rock.png",
-    "deco_stump": "deco/deco_stump.png",
-    "deco_water_pump": "deco/deco_water_pump.png",
-    "deco_wheelbarrow": "deco/deco_wheelbarrow.png",
-    "trough_feed_empty": "deco/trough_feed_empty.png",
-    "trough_feed_full": "deco/trough_feed_full.png",
-    "trough_water": "deco/trough_water.png"
+    "creditor": {
+      "sheet": "faces/creditor.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "vet": {
+      "sheet": "faces/vet.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "feed": {
+      "sheet": "faces/feed.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "auction": {
+      "sheet": "faces/auction.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "player": {
+      "sheet": "faces/player.png",
+      "size": [
+        48,
+        48
+      ]
+    },
+    "worker": {
+      "sheet": "faces/workers.png",
+      "size": [
+        48,
+        48
+      ]
+    }
   }
 }

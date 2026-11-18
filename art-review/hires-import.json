@@ -1,0 +1,15 @@
+{
+  "scale": 4,
+  "filter": "premultiplied area",
+  "inputs": [
+    "2026-11-18-batch1",
+    "2026-11-18-batch2"
+  ],
+  "environment": 63,
+  "faces": 6,
+  "notes": [
+    "Original source files only.",
+    "Player delivery contains four standing directions; walking uses those held poses.",
+    "Pig happy animation uses supplied walking poses."
+  ]
+}
