@@ -313,7 +313,7 @@ export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
     cheer(pigId) { const a = actors.get(pigId); if (a) a.happyUntil = a.t + 360; },
     resize,
     playerPos() { return { x: player.tx, y: player.ty, dir: player.dir }; },
-    get player() { return { tx: player.tx, ty: player.ty, x: player.tx, y: player.ty, dir: player.dir }; },
+    get player() { return { tx: player.tx, ty: player.ty, x: player.tx, y: player.ty, dir: player.dir, moving: !!player.moving }; },
     get usingRealSprites() { return { adult: sheets.adult.real, piglet: sheets.piglet.real }; },
   };
 }

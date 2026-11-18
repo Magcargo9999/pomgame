@@ -11,27 +11,47 @@ before(async () => { if (skip) return; pw = await loadPlaywright(); srv = await 
 after(async () => { await browser?.close(); srv?.server.close(); });
 
 const view = (page) => page.evaluate(() => window.__game.view);
-const pos = (page) => page.evaluate(() => ({ x: window.__ranch.world.player.tx, y: window.__ranch.world.player.ty, dir: window.__ranch.world.player.dir }));
+const player = (page) => page.evaluate(() => window.__ranch.world.player);
 const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+const FRAME_MS = 16;
+const sameTile = (a, b) => a.x === b.x && a.y === b.y;
 
 async function stepKey(page, dir) {
-  await page.keyboard.down(KEY[dir]); await page.waitForTimeout(90); await page.keyboard.up(KEY[dir]); await page.waitForTimeout(170);
+  // Playwright's paused clock schedules one animation frame per 16 ms.
+  // Let the game read the held key once, then release it before the next tile.
+  await page.keyboard.down(KEY[dir]);
+  try {
+    await page.clock.runFor(FRAME_MS);
+  } finally {
+    await page.keyboard.up(KEY[dir]);
+  }
+  for (let frame = 0; frame < 60; frame++) {
+    const p = await player(page);
+    if (!p.moving) return p;
+    await page.clock.runFor(FRAME_MS);
+  }
+  throw new Error(`movement did not settle after pressing ${dir}`);
 }
 /** Walk tile by tile: x first along the road row, then y. Fails with a screenshot if blocked. */
 async function walkTo(page, tx, ty, roadY = 5) {
   const legs = [['y', roadY], ['x', tx], ['y', ty]];
   for (const [axis, target] of legs) {
     for (let guard = 0; guard < 60; guard++) {
-      const p = await pos(page);
+      const p = await player(page);
       if (p[axis] === target) break;
       const dir = axis === 'x' ? (p.x < target ? 'right' : 'left') : (p.y < target ? 'down' : 'up');
-      await stepKey(page, dir);
-      const q = await pos(page);
-      if (q.x === p.x && q.y === p.y) { await shot(page, 'ui-run-blocked'); throw new Error(`blocked at ${p.x},${p.y} going ${dir} to ${tx},${ty}`); }
+      const q = await stepKey(page, dir);
+      if (sameTile(p, q)) { await shot(page, 'ui-run-blocked'); throw new Error(`blocked at ${p.x},${p.y} going ${dir} to ${tx},${ty}`); }
     }
   }
 }
-async function face(page, dir) { const p = await pos(page); if (p.dir !== dir) { await page.keyboard.press(KEY[dir]); await page.waitForTimeout(250); const q = await pos(page); if (q.x !== p.x || q.y !== p.y) await stepKey(page, dir === 'up' ? 'down' : 'up'); } }
+async function faceBuilding(page) {
+  const p = await player(page);
+  if (p.dir === 'up') return;
+  const q = await stepKey(page, 'up');
+  assert.equal(q.dir, 'up');
+  assert.ok(sameTile(p, q), 'the building should block movement');
+}
 async function use(page) { await page.locator('#world').focus(); await page.keyboard.press('KeyE'); await page.waitForTimeout(150); }
 async function menuItem(page, label) {
   const item = page.getByRole('menuitem', { name: label });
@@ -47,10 +67,13 @@ test('UI run: day 1 to 57 by keyboard and mouse, both payments made', { skip, ti
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   try {
+    const start = new Date();
+    await page.clock.install({ time: start });
+    await page.clock.pauseAt(new Date(start.getTime() + 60_000));
     await page.goto(srv.url);
     await page.waitForFunction(() => document.body.dataset.ready === 'true', null, { timeout: 15_000 });
     const SHED = { x: 10, y: 4 }, DOCK = { x: 29, y: 4 };
-    await walkTo(page, SHED.x, SHED.y); await face(page, 'up');
+    await walkTo(page, SHED.x, SHED.y); await faceBuilding(page);
 
     while ((await view(page)).day <= 56) {
       let v = await view(page);
@@ -74,12 +97,12 @@ test('UI run: day 1 to 57 by keyboard and mouse, both payments made', { skip, ti
       // 3. ship ready pigs from the dock (finishers at ~108 kg or day 41 of age)
       v = await view(page);
       if (v.pigs.some((p) => p.shippable && p.marketWindow && (p.weightKg >= 108 || p.ageDays >= 41))) {
-        await walkTo(page, DOCK.x, DOCK.y); await face(page, 'up'); await use(page);
+        await walkTo(page, DOCK.x, DOCK.y); await faceBuilding(page); await use(page);
         await menuItem(page, '출하하기');
         await page.getByRole('button', { name: '트럭에 태우기' }).click();
         await closeDialogs(page);
         log.push(`day ${v.day}: shipped ${(await view(page)).shipments.length}`);
-        await walkTo(page, SHED.x, SHED.y); await face(page, 'up');
+        await walkTo(page, SHED.x, SHED.y); await faceBuilding(page);
       }
       // 4. pay the season's due at the creditor when it is close and affordable
       v = await view(page);
