@@ -2,6 +2,8 @@
 
 QA, 2026-11-18. Spec: `docs/art/SPRITE-SPEC.md` §2. Plan ids L1–L3.
 
+> **Decision (god, GDD D10):** the game uses the 32px `pig_adult` only. The 128px realistic sheet is out of the prototype: its files stay, nothing references them, and ART-1..3 are **not to be fixed now**. SPRITE-SPEC rules stand as written (head ≥ 30% applies).
+
 ## L1 Automatic checks (`node tools/sprite-validate.cjs <sheet>`)
 
 | Sheet | Cell | Result |
@@ -25,7 +27,7 @@ Also green: `node --test tools/sprite-validate.test.cjs` (5/5), `validate-pig.cj
 | 3–4 step ramp per material, dithering only on purpose | PASS for coat (4 browns); pink ear/snout uses 2 steps (minor) |
 | Colour, proportions and outline stable across frames | PASS |
 
-### pig_adult_realistic (128px) — source: `art-review/pig_adult_realistic.browser.png`, detail render `tests/e2e/screenshots/art-realistic-detail.png` (marker colours, 2×)
+### pig_adult_realistic (128px) — OUT OF PROTOTYPE, findings kept for later — source: `art-review/pig_adult_realistic.browser.png`, detail render `tests/e2e/screenshots/art-realistic-detail.png` (marker colours, 2×)
 
 | Check | Result |
 |---|---|
@@ -37,4 +39,4 @@ Also green: `node --test tools/sprite-validate.test.cjs` (5/5), `validate-pig.cj
 
 ## L3 In game
 
-**ART-4** `assets/sprites/manifest.json` has `pig.adult: null` and `pig.piglet: null`, so the game still draws code placeholders; neither sheet is used. Prototype DoD asks for real sprites. Which sheet goes in (32px or 128px drawn at 32 world px) is a god/frontend decision.
+**ART-4** `assets/sprites/manifest.json` has `pig.adult: null`, so the game draws code placeholders. Frontend to set it to `pig_adult` (god). Test: `tests/e2e/sprites.test.mjs`. It fails until the manifest is set; with the entry set locally all 4 checks pass and the real sheet renders at 1280×720 (`tests/e2e/screenshots/sprites-ingame-1280x720.png`).
