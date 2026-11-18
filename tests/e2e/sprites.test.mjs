@@ -28,15 +28,24 @@ test('L3 the realistic 128px sheet is not referenced by the manifest or src/ui',
   }
 });
 
-test('L1 every sheet in the manifest passes sprite-validate', { skip }, () => {
+test('L1 manifest animation sheets validate and static sprites decode', { skip }, () => {
   const validator = path.join(ROOT, 'tools', 'sprite-validate.cjs');
   if (!fs.existsSync(validator)) return assert.fail('tools/sprite-validate.cjs missing');
-  const validate = createRequire(import.meta.url)(validator);
+  const require = createRequire(import.meta.url);
+  const validate = require(validator);
+  const { decode } = require(path.join(ROOT, 'tools', 'png.cjs'));
   const palette = (m) => JSON.parse(fs.readFileSync(path.join(ROOT, m.palette || 'docs/art/palette.json'), 'utf8'));
   for (const [species, entries] of Object.entries(manifest)) {
     if (species.startsWith('_')) continue;
     for (const [name, e] of Object.entries(entries ?? {})) {
       if (!e) continue;
+      if (typeof e === 'string') {
+        const file = path.join(ROOT, 'assets', 'sprites', e);
+        const { w, h, p } = decode(file);
+        assert.ok(w > 0 && h > 0 && p.some((value, i) => i % 4 === 3 && value === 255), e);
+        for (let i = 3; i < p.length; i += 4) assert.ok(p[i] === 0 || p[i] === 255, e);
+        continue;
+      }
       const meta = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'sprites', e.meta), 'utf8'));
       const sheets = [[e.sheet, false], ...Object.values(e.layers ?? {}).map((p) => [p, true])];
       for (const [p, layer] of sheets) {
