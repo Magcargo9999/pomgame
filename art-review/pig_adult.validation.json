@@ -1,0 +1,303 @@
+{
+  "pass": true,
+  "results": [
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/pig_adult.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/pig_adult.spots.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 3,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/validation/pig_adult.spots.composite.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 11,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/pig_adult.belt.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/validation/pig_adult.belt.composite.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 12,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/pig_adult.points.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/validation/pig_adult.points.composite.png",
+      "pass": true,
+      "size": [
+        128,
+        480
+      ],
+      "frames": 39,
+      "opaqueColors": 12,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_down.png",
+      "pass": true,
+      "size": [
+        32,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_down_x8.png",
+      "pass": true,
+      "size": [
+        256,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_up.png",
+      "pass": true,
+      "size": [
+        32,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_up_x8.png",
+      "pass": true,
+      "size": [
+        256,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_right.png",
+      "pass": true,
+      "size": [
+        32,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/keyposes/pig_adult_right_x8.png",
+      "pass": true,
+      "size": [
+        256,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/pig_adult_x8.png",
+      "pass": true,
+      "size": [
+        1024,
+        3840
+      ],
+      "frames": 39,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    }
+  ],
+  "x8NearestNeighborMismatches": 0
+}

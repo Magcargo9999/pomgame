@@ -1,0 +1,34 @@
+{
+  "_note": "Money balance. Tuned by tools/balance-sim.js; see docs/tech/BALANCE.md. Each minimum must exceed that season interest.",
+  "startCash": 1000000,
+  "debt": {
+    "initial": 10000000,
+    "ratePerSeason": 0.02,
+    "minPerSeason": [
+      300000,
+      500000,
+      700000,
+      900000
+    ],
+    "lateRateMult": 2,
+    "maxMissed": 3
+  },
+  "market": {
+    "carcassPricePerKg": 5000,
+    "dailyVol": 0.015,
+    "meanRevert": 0.08,
+    "minMult": 0.85,
+    "maxMult": 1.15
+  },
+  "grades": {
+    "1": 1,
+    "2": 0.85,
+    "brand": 1.45,
+    "1+": 1.15,
+    "out": 0.6
+  },
+  "brandCert": {
+    "imfMin": 4,
+    "fatColorMax": 1
+  }
+}

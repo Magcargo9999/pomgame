@@ -1,0 +1,61 @@
+{
+  "down": {
+    "source": "down.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "anchorShift": 8,
+    "bounds": [
+      36,
+      21,
+      90,
+      119
+    ],
+    "automaticCleanupPixels": 358,
+    "footGroups": [
+      50.5,
+      76
+    ]
+  },
+  "up": {
+    "source": "up.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "anchorShift": -2,
+    "bounds": [
+      31,
+      3,
+      92,
+      119
+    ],
+    "automaticCleanupPixels": 270,
+    "footGroups": [
+      41,
+      81.5
+    ]
+  },
+  "right": {
+    "source": "right.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "anchorShift": 19,
+    "bounds": [
+      6,
+      55,
+      121,
+      119
+    ],
+    "automaticCleanupPixels": 223,
+    "footGroups": [
+      15.5,
+      31.5,
+      71,
+      86.5
+    ]
+  }
+}

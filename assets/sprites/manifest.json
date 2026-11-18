@@ -1,0 +1,7 @@
+{
+  "_doc": "Real sprite sheets the game should load (SPRITE-SPEC). Add an entry when a sheet lands; missing entries use code-drawn placeholders. Paths are relative to assets/sprites/.",
+  "pig": {
+    "adult": null,
+    "piglet": null
+  }
+}

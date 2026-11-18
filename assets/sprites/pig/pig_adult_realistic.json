@@ -1,0 +1,137 @@
+{
+  "cell": [
+    128,
+    128
+  ],
+  "anchor": [
+    64,
+    119
+  ],
+  "slots": [
+    "coat",
+    "spot",
+    "snout"
+  ],
+  "palette": "docs/art/palette-realistic.json",
+  "breeds": "docs/art/breeds-realistic.json",
+  "style": "semi-realistic pixel art, user reference revision",
+  "revision": "2026-11-18-realistic",
+  "supersedesStyle": "32px chibi draft; this 128px revision is separate",
+  "left": {
+    "source": "right",
+    "flipX": true
+  },
+  "anims": {
+    "idle_down": {
+      "row": 0,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_up": {
+      "row": 1,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_right": {
+      "row": 2,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "walk_down": {
+      "row": 3,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_up": {
+      "row": 4,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_right": {
+      "row": 5,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "eat_down": {
+      "row": 6,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "eat_up": {
+      "row": 7,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "eat_right": {
+      "row": 8,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "sleep_down": {
+      "row": 9,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "sleep_up": {
+      "row": 10,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "sleep_right": {
+      "row": 11,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "happy_down": {
+      "row": 12,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    },
+    "happy_up": {
+      "row": 13,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    },
+    "happy_right": {
+      "row": 14,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    }
+  },
+  "jumpFrames": {
+    "happy_down": [
+      1
+    ],
+    "happy_up": [
+      1
+    ],
+    "happy_right": [
+      1
+    ]
+  },
+  "patterns": {
+    "points": {
+      "anatomy": [
+        "muzzle",
+        "tail",
+        "four feet"
+      ],
+      "occlusion": "Only visible anatomical points are drawn."
+    }
+  }
+}

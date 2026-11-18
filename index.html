@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>...</title>
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="modulepreload" href="./src/sim/index.js">
+  <link rel="preload" href="./i18n/ko.json" as="fetch" crossorigin>
+  <script type="module" src="./src/ui/main.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header id="hud">
+      <h1 class="brand" data-t="game.title"></h1>
+      <div class="stat"><span class="label" data-t="hud.cash"></span><strong id="hud-cash" class="num" data-testid="cash"></strong></div>
+      <div class="stat" id="hud-ap-wrap" role="group"><span class="label" data-t="hud.ap"></span><span id="hud-ap-pips" class="pips" aria-hidden="true"></span><strong id="hud-ap" class="num" data-testid="ap"></strong></div>
+      <div class="stat"><span id="hud-date" data-testid="day"></span></div>
+      <div class="stat debt"><span class="label" data-t="hud.debt"></span><strong id="hud-debt"></strong></div>
+      <div class="stat"><span id="hud-pigs"></span></div>
+      <div class="stat"><span class="label" data-t="hud.market"></span><strong id="hud-market" class="num"></strong></div>
+      <nav class="hud-actions">
+        <button id="btn-pigs" class="btn" data-t="hud.pigList"></button>
+        <button id="btn-town" class="btn" data-t="hud.town"></button>
+        <button id="btn-menu" class="btn" data-t="hud.menu"></button>
+        <button id="btn-end" class="btn primary" data-testid="end-day" data-t="hud.endDay"></button>
+      </nav>
+    </header>
+    <main id="stage">
+      <canvas id="world" tabindex="0" data-t-label="game.title"></canvas>
+      <p id="help" data-t="hud.help"></p>
+      <div id="toasts" aria-live="polite"></div>
+      <div id="popup" role="menu" aria-labelledby="popup-title" hidden></div>
+      <p id="loading">…</p>
+    </main>
+  </div>
+  <div id="modal-root"></div>
+</body>
+</html>
