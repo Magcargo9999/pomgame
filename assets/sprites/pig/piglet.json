@@ -1,0 +1,136 @@
+{
+  "cell": [
+    32,
+    32
+  ],
+  "anchor": [
+    16,
+    29
+  ],
+  "slots": [
+    "coat",
+    "spot",
+    "snout"
+  ],
+  "left": {
+    "source": "right",
+    "flipX": true
+  },
+  "anims": {
+    "idle_down": {
+      "row": 0,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_up": {
+      "row": 1,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_right": {
+      "row": 2,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "walk_down": {
+      "row": 3,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_up": {
+      "row": 4,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_right": {
+      "row": 5,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "eat_down": {
+      "row": 6,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "eat_up": {
+      "row": 7,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "eat_right": {
+      "row": 8,
+      "frames": 2,
+      "ms": 300,
+      "loop": true
+    },
+    "sleep_down": {
+      "row": 9,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "sleep_up": {
+      "row": 10,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "sleep_right": {
+      "row": 11,
+      "frames": 2,
+      "ms": 800,
+      "loop": true
+    },
+    "happy_down": {
+      "row": 12,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    },
+    "happy_up": {
+      "row": 13,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    },
+    "happy_right": {
+      "row": 14,
+      "frames": 3,
+      "ms": 120,
+      "loop": false
+    }
+  },
+  "jumpFrames": {
+    "happy_down": [
+      1
+    ],
+    "happy_up": [
+      1
+    ],
+    "happy_right": [
+      1
+    ]
+  },
+  "patterns": {
+    "points": {
+      "anatomy": [
+        "muzzle",
+        "tail_tip",
+        "front_left_foot",
+        "front_right_foot",
+        "back_left_foot",
+        "back_right_foot"
+      ],
+      "occlusion": "Hidden points are not drawn. Front hides tail; rear hides muzzle."
+    }
+  },
+  "provenance": "art-review/piglet-compat-keyposes/sources.json"
+}

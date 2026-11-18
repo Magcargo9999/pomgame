@@ -1,0 +1,287 @@
+{
+  "pass": true,
+  "profile": "128px user-reference revision; not original 32px dimensions",
+  "results": [
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/piglet_realistic.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/piglet_realistic.spots.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet_realistic-validation/spots.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 12,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/piglet_realistic.belt.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet_realistic-validation/belt.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 12,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/pig/piglet_realistic.points.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 4,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": true,
+      "outsideBasePixels": 0
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet_realistic-validation/points.png",
+      "pass": true,
+      "size": [
+        512,
+        1920
+      ],
+      "frames": 39,
+      "opaqueColors": 12,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/down.png",
+      "pass": true,
+      "size": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/down_x8.png",
+      "pass": true,
+      "size": [
+        1024,
+        1024
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/up.png",
+      "pass": true,
+      "size": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/up_x8.png",
+      "pass": true,
+      "size": [
+        1024,
+        1024
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/right.png",
+      "pass": true,
+      "size": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/piglet-keyposes/right_x8.png",
+      "pass": true,
+      "size": [
+        1024,
+        1024
+      ],
+      "frames": 1,
+      "opaqueColors": 7,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "art-review/piglet_realistic_x8.png",
+      "pass": true,
+      "x8BlockMismatches": 0
+    }
+  ]
+}

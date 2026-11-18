@@ -41,10 +41,13 @@ async function loadManifest() {
 async function loadPigSheet(entry, scale) {
   if (entry && entry.sheet && entry.meta) {
     try {
-      const meta = await (await fetch(`./assets/sprites/${entry.meta}`)).json();
-      const base = await loadImage(`./assets/sprites/${entry.sheet}`);
-      const layers = {};
-      for (const [k, path] of Object.entries(entry.layers || {})) layers[k] = await loadImage(`./assets/sprites/${path}`);
+      const layerEntries = Object.entries(entry.layers || {});
+      const [meta, base, ...layerImgs] = await Promise.all([
+        fetch(`./assets/sprites/${entry.meta}`).then((r) => r.json()),
+        loadImage(`./assets/sprites/${entry.sheet}`),
+        ...layerEntries.map(([, path]) => loadImage(`./assets/sprites/${path}`)),
+      ]);
+      const layers = Object.fromEntries(layerEntries.map(([k], i) => [k, layerImgs[i]]));
       return { meta, base, layers, real: true };
     } catch (err) { console.warn('sprite fallback:', entry.sheet, err.message); }
   }
@@ -52,13 +55,20 @@ async function loadPigSheet(entry, scale) {
   return { meta: g.meta, base: bufToCanvas(g.base), layers: Object.fromEntries(Object.entries(g.layers).map(([k, v]) => [k, bufToCanvas(v)])), real: false };
 }
 
-export async function createWorld(canvas, { onInteract, isBlocked }) {
+// Sprite sheets load in parallel; main.js starts this before anything else so the
+// game is ready as soon as the strings are.
+export async function loadSprites() {
+  const manifest = await loadManifest();
+  const [adult, piglet] = await Promise.all([loadPigSheet(manifest.pig?.adult, 1), loadPigSheet(manifest.pig?.piglet, 0.6)]);
+  return { adult, piglet };
+}
+
+export async function createWorld(canvas, { onInteract, isBlocked, sprites }) {
   const ctx = canvas.getContext('2d');
   const bg = document.createElement('canvas');
   bg.width = MAP_W * TILE; bg.height = MAP_H * TILE;
   drawBackground(bg.getContext('2d'));
-  const manifest = await loadManifest();
-  const sheets = { adult: await loadPigSheet(manifest.pig?.adult, 1), piglet: await loadPigSheet(manifest.pig?.piglet, 0.6) };
+  const sheets = await (sprites || loadSprites());
   const player = { tx: START.x, ty: START.y, fx: START.x, fy: START.y, dir: 'down', moving: null, walkT: 0 };
   const playerSheet = bufToCanvas(makePlayerSheet());
   const held = [];

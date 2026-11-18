@@ -3,7 +3,7 @@
 // and the screen is drawn from sim.getView(state).
 import { loadStrings, t, list, money, fmtNum } from './i18n.js';
 import * as sim from './sim.js';
-import { createWorld } from './world.js';
+import { createWorld, loadSprites } from './world.js';
 import { makeScreens } from './screens.js';
 import { h, isModalOpen, isPopupOpen, closePopup, closeModal, toast } from './dom.js';
 import { makePigSheets, recolorPixels, slotMap, CELL } from './sprites.js';
@@ -199,6 +199,7 @@ function loadSaved() {
 }
 
 async function boot() {
+  const sprites = loadSprites();
   await loadStrings();
   staticText();
   app.state = loadSaved();
@@ -206,6 +207,7 @@ async function boot() {
   screens = makeScreens(app);
   const canvas = $('world');
   world = await createWorld(canvas, {
+    sprites,
     isBlocked: () => isModalOpen() || isPopupOpen(),
     onInteract: (target, pos) => screens.objectMenu(target, pos),
   });

@@ -1,7 +1,11 @@
 {
-  "_doc": "Real sprite sheets the game should load (SPRITE-SPEC). Add an entry when a sheet lands; missing entries use code-drawn placeholders. Paths are relative to assets/sprites/.",
+  "_doc": "Real sprite sheets the game should load (SPRITE-SPEC). Add an entry when a sheet lands; missing entries use code-drawn placeholders. Paths are relative to assets/sprites/. The 128px realistic sheet is out of the prototype (decision 33): do not reference it.",
   "pig": {
-    "adult": null,
+    "adult": {
+      "sheet": "pig/pig_adult.png",
+      "meta": "pig/pig_adult.json",
+      "layers": { "belt": "pig/pig_adult.belt.png", "spots": "pig/pig_adult.spots.png", "points": "pig/pig_adult.points.png" }
+    },
     "piglet": null
   }
 }

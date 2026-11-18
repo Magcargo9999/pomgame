@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "protocol": "file:",
+  "canvases": 45,
+  "breedPatternCombinations": 20,
+  "distinctBreeds": 5,
+  "happyStopsAtLanding": true,
+  "frameScrubbing": true,
+  "breedJSONReload": true,
+  "pageErrors": [],
+  "blockedExternalRequests": 0
+}
