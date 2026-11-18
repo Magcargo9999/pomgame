@@ -1,0 +1,16 @@
+// Reproducible raster processing and pixel animation. No packages or network.
+const fs=require('node:fs'),path=require('node:path'),{decode,encode}=require('./png.cjs');
+const root=path.resolve(__dirname,'..'),read=p=>JSON.parse(fs.readFileSync(path.join(root,p))),write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),x);};
+const pal=read('docs/art/palette.json'),breeds=read('docs/art/breeds.json');
+const C=['#ff00ff','#cc00cc','#990099','#660066','#ffff00','#cccc00','#999900',pal.eye||'#252438'];
+const rgb=h=>h.match(/[a-f\d]{2}/gi).map(x=>parseInt(x,16)),R=C.map(rgb),colors=[...pal.colors,...Object.values(pal.slots).flat()];
+const png=(w,h,p)=>write('art-review/tmp.png',encode(w,h,p));
+function writeRaster(file,w,h,arr,recolor=null,scale=1){const p=Buffer.alloc(w*h*scale*scale*4);for(let y=0;y<h*scale;y++)for(let x=0;x<w*scale;x++){const c=arr[Math.floor(y/scale)*w+Math.floor(x/scale)];if(c<0)continue;const v=recolor?rgb(recolor[c]):R[c];p.set([...v,255],(y*w*scale+x)*4);}write(file,encode(w*scale,h*scale,p));}
+function modeReduce(source){const {w,h,p}=decode(source),arr=Array(1024).fill(-1);for(let y=0;y<32;y++)for(let x=0;x<32;x++){const freq=new Map();for(let yy=Math.floor(y*h/32);yy<Math.floor((y+1)*h/32);yy++)for(let xx=Math.floor(x*w/32);xx<Math.floor((x+1)*w/32);xx++){const k=(yy*w+xx)*4,r=p[k],g=p[k+1],b=p[k+2];const key=p[k+3]<128||g>100&&g>r*1.3&&g>b*1.3?-1:(r<<16)|(g<<8)|b;freq.set(key,(freq.get(key)||0)+1);}const key=[...freq].sort((a,b)=>b[1]-a[1])[0][0];if(key<0)continue;const v=[key>>16,(key>>8)&255,key&255];let dist=Infinity;R.forEach((r,j)=>{const d=r.reduce((s,c,k)=>s+(c-v[k])**2,0);if(d<dist){dist=d;arr[y*32+x]=j;}});}return arr;}
+const at=(a,x,y)=>x<0||x>31||y<0||y>31?-1:a[y*32+x];
+function bounds(a){let xs=[],ys=[];a.forEach((v,i)=>{if(v>=0){xs.push(i%32);ys.push(Math.floor(i/32));}});return[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];}
+function translate(a,dx,dy,predicate=()=>true){const b=Array(1024).fill(-1);a.forEach((v,i)=>{let x=i%32,y=i>>5;if(v<0)return;let nx=x+(predicate(x,y)?dx:0),ny=y+(predicate(x,y)?dy:0);if(nx>=0&&nx<32&&ny>=0&&ny<32)b[ny*32+nx]=v;});return b;}
+function clean(a){const b=a.slice();let edits=0;for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=y*32+x,c=a[i];if(c<0)continue;const ns=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].map(([xx,yy])=>at(a,xx,yy));let next=c;if(ns.includes(-1)&&c!==3&&c!==7)next=3;else if(!ns.includes(c)&&c!==7&&!ns.includes(-1)){const valid=ns.filter(v=>v>=0);next=valid.sort((a,b)=>valid.filter(x=>x===b).length-valid.filter(x=>x===a).length)[0];}if(next!==c){b[i]=next;edits++;}}return{a:b,edits};}
+function prepare(source){let a=modeReduce(source),box=bounds(a);const shift=29-box[3];a=translate(a,0,shift);let total=0;for(let i=0;i<5;i++){const c=clean(a);a=c.a;total+=c.edits;if(!c.edits)break;}return{a,sourceSize:[decode(source).w,decode(source).h],bounds:bounds(a),cleanupEdits:total,shiftY:shift};}
+if(process.argv[2]==='inspect'){for(const p of process.argv.slice(3)){const r=prepare(p);console.log(JSON.stringify({source:p,...r,a:undefined}));writeRaster('art-review/'+path.basename(p,'.png')+'_reduced.png',32,32,r.a,null,8);}process.exit();}
+module.exports={prepare,modeReduce,writeRaster,at,translate,clean,bounds,C,R,read,write,rgb};

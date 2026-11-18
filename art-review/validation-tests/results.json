@@ -1,0 +1,94 @@
+{
+  "pass": true,
+  "cases": [
+    {
+      "name": "valid",
+      "expectedPass": true,
+      "actualPass": true,
+      "issues": []
+    },
+    {
+      "name": "wrong-size",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "dimensions",
+        "anchor: 1",
+        "empty: 1"
+      ]
+    },
+    {
+      "name": "half-alpha",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "alpha: 1"
+      ]
+    },
+    {
+      "name": "off-palette",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "palette: 1",
+        "isolated: 1"
+      ]
+    },
+    {
+      "name": "too-many-colors",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "isolated: 13",
+        "colors: 15"
+      ]
+    },
+    {
+      "name": "isolated-interior",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "isolated: 1"
+      ]
+    },
+    {
+      "name": "wrong-outline-ramp",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "outline: 1"
+      ]
+    },
+    {
+      "name": "black-outline",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "palette: 1",
+        "isolated: 1",
+        "outline: 1"
+      ]
+    },
+    {
+      "name": "missing-anchor",
+      "expectedPass": false,
+      "actualPass": false,
+      "issues": [
+        "outline: 12",
+        "anchor: 1"
+      ]
+    },
+    {
+      "name": "isolated-eye-allowed",
+      "expectedPass": true,
+      "actualPass": true,
+      "issues": []
+    },
+    {
+      "name": "jump-exception",
+      "expectedPass": true,
+      "actualPass": true,
+      "issues": []
+    }
+  ]
+}

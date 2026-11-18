@@ -1,0 +1,47 @@
+{
+  "down": {
+    "source": "down.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      4,
+      10,
+      27,
+      29
+    ],
+    "anchorTranslationY": 0,
+    "correctedPixels": 31
+  },
+  "up": {
+    "source": "up.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      4,
+      10,
+      27,
+      29
+    ],
+    "anchorTranslationY": 0,
+    "correctedPixels": 44
+  },
+  "right": {
+    "source": "right.source.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      3,
+      12,
+      29,
+      29
+    ],
+    "anchorTranslationY": 2,
+    "correctedPixels": 25
+  }
+}
