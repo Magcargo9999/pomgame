@@ -188,16 +188,18 @@ export function makeScreens(app) {
     };
     const upd = () => {
       const { p, info } = cur();
-      const s = info.options.sireId.find((x) => x.id === sSel.value) || info.options.sireId[0];
-      const sire = app.pig(s.id);
+      const sireId = sSel.value || info.options.sireId[0].id;
+      const pv = sim.previewBreeding(app.state, sireId, p.id);
+      const sire = app.pig(sireId);
       out.replaceChildren(...[
         h('p', { class: 'muted small', text: t('breed.pedigree') }),
         h('div', { class: 'peds' }, sire ? ped(sire) : null, ped(p)),
-        h('p', {}, `${t('breed.F')}: ${(s.expectedF * 100).toFixed(2)}% `, h('span', { class: `badge risk-${s.risk}`, text: t(`breed.risk.${s.risk}`) })),
-        info.options.warning ? h('p', { class: 'warn', text: info.options.warning === 'herd.full' ? t('breed.fullWarn') : t(`error.${info.options.warning}`) }) : null,
+        h('p', {}, `${t('breed.F')}: ${(pv.expectedF * 100).toFixed(2)}% `, h('span', { class: `badge risk-${pv.risk}`, text: t(`breed.risk.${pv.risk}`) })),
+        pv.warning ? h('p', { class: 'warn', text: pv.warning === 'herd.full' ? t('breed.fullWarn') : t(`error.${pv.warning}`) }) : null,
+        !pv.ok && pv.reason ? h('p', { class: 'warn', text: t(`error.${pv.reason}`) }) : null,
         h('p', { class: 'muted small', text: t('breed.result') }),
       ].filter(Boolean));
-      go.disabled = V().ap.left < info.apCost;
+      go.disabled = !pv.ok || V().ap.left < info.apCost;
       go.replaceChildren(t('action.breed'), h('small', { class: 'cost', text: ` · ${t('apCost', { n: info.apCost })}` }));
     };
     dSel.onchange = () => { fillSires(); upd(); };
@@ -216,12 +218,12 @@ export function makeScreens(app) {
     const i = V().recipes.findIndex((r) => r.id === f.recipeId);
     return t('feed.recipe', { n: i + 1 });
   }
-  function mixProps(shares) {
-    const ing = sim.items.ingredients;
-    let e = 0, p = 0, unsat = 0, barley = 0, total = 0;
-    for (const [k, v] of Object.entries(shares)) { total += v; const s = v / 100; e += s * ing[k].energy; p += s * ing[k].protein; unsat += s * ing[k].unsat; barley += s * ing[k].barley; }
-    const k = total ? 100 / total : 0;
-    return { total, energy: e * k, protein: p * k, fatColor: Math.min(7, Math.max(1, 1 + 4 * unsat * k - 1.5 * barley * k)) };
+  // percent sliders -> sim.previewMix (shares are normalised by the sim)
+  function mixProps(mix) {
+    const total = Object.values(mix).reduce((a, b) => a + b, 0);
+    const shares = Object.fromEntries(Object.entries(mix).filter(([, x]) => x > 0).map(([k, x]) => [k, x / 100]));
+    const pv = total ? sim.previewMix(shares) : { ok: false };
+    return { total, ...pv };
   }
   function feedScreen() {
     const v = V();
@@ -249,10 +251,12 @@ export function makeScreens(app) {
       const save = h('button', { class: 'btn' }, t('action.saveRecipe'));
       const upd = () => {
         const m = mixProps(mix);
+        if (!m.ok) { pv.replaceChildren(h('p', { class: 'warn', text: t('error.param.invalid') })); save.disabled = true; return; }
         const fc = m.fatColor <= 2 ? 'good' : m.fatColor <= 4 ? 'ok' : 'bad';
         pv.replaceChildren(h('p', {}, `${t('feed.total', { n: Math.round(m.total) })} · ${t('feed.energy')} ${m.energy.toFixed(2)} · ${t('feed.protein')} ${m.protein.toFixed(2)} · ${t('feed.fatColor')}: `,
-          h('span', { class: `badge ${fc === 'bad' ? 'bad' : fc === 'good' ? 'good' : ''}`, text: t(`feed.fatColor.${fc}`) })), h('p', { class: 'muted small', text: t('feed.hint') }));
-        save.disabled = !m.total;
+          h('span', { class: `badge ${fc === 'bad' ? 'bad' : fc === 'good' ? 'good' : ''}`, text: t(`feed.fatColor.${fc}`) }),
+          m.pricePerKg ? ` · ${t('unit.kg', { price: money(m.pricePerKg) })}` : ''), h('p', { class: 'muted small', text: t('feed.hint') }));
+        save.disabled = false;
       };
       save.onclick = () => {
         const total = Object.values(mix).reduce((a, b) => a + b, 0);
@@ -334,6 +338,7 @@ export function makeScreens(app) {
           h('td', {}, h('span', { class: `grade g-${r.grade.replace('+', 'p')}`, text: t(`grade.${r.grade}`) })),
           h('td', { class: 'num', text: money(r.revenue) }))))),
       h('p', { class: 'total', text: t('report.total', { amount: money(total) }) }),
+      sheets.some((r) => r.truckFee) ? h('p', { class: 'muted small total', text: t('report.truckFee', { fee: money(sheets.reduce((s, r) => s + (r.truckFee || 0), 0)) }) }) : null,
       h('blockquote', { class: 'line', text: anyOut ? t('line.report.2') : t('line.report.1', { name: best.name || name(best.pigId), grade: t(`gradeLong.${best.grade}`) }) }),
       h('p', { class: 'muted small', text: t('report.brandNote') }));
     modal({ title: t('report.title'), body, wide: true, onClose });
