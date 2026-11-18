@@ -1,0 +1,27 @@
+{
+  "tiles": {
+    "pass": true,
+    "protocol": "file:",
+    "tiles": 39,
+    "gateChangesPixels": true,
+    "gateRoundTrip": true,
+    "pageErrors": 0
+  },
+  "player": {
+    "pass": true,
+    "protocol": "file:",
+    "animations": 6,
+    "canvases": 18,
+    "scales": [
+      1,
+      4,
+      8
+    ],
+    "frameScrub": true,
+    "flipChangesPixels": true,
+    "restart": true,
+    "pageErrors": 0
+  },
+  "pass": true,
+  "externalRequests": 0
+}

@@ -1,0 +1,138 @@
+{
+  "name": "player",
+  "cell": [
+    16,
+    32
+  ],
+  "body": [
+    14,
+    29
+  ],
+  "anchor": [
+    8,
+    31
+  ],
+  "palette": "docs/art/palette.json",
+  "sourceDir": "art-review/player-keyposes",
+  "directions": [
+    "down",
+    "up",
+    "right"
+  ],
+  "colors": [
+    "#dfb97b",
+    "#b48756",
+    "#513b32",
+    "#b4cd73",
+    "#7da95d",
+    "#334e40",
+    "#efb39f",
+    "#a45d59",
+    "#653f43",
+    "#252438"
+  ],
+  "dark": [
+    2,
+    2,
+    2,
+    5,
+    5,
+    5,
+    8,
+    8,
+    8,
+    9
+  ],
+  "eye": 9,
+  "eyes": {
+    "down": [
+      [
+        7,
+        8
+      ],
+      [
+        9,
+        8
+      ]
+    ],
+    "up": [],
+    "right": [
+      [
+        11,
+        8
+      ]
+    ]
+  },
+  "features": {
+    "down": {
+      "faceBox": [
+        6,
+        7,
+        10,
+        10
+      ],
+      "extra": [
+        [
+          8,
+          11,
+          7
+        ],
+        [
+          8,
+          12,
+          7
+        ],
+        [
+          8,
+          4,
+          1
+        ],
+        [
+          8,
+          5,
+          1
+        ]
+      ]
+    },
+    "up": {
+      "hairBox": [
+        6,
+        7,
+        10,
+        9
+      ]
+    },
+    "right": {
+      "faceBox": [
+        9,
+        7,
+        12,
+        10
+      ],
+      "extra": [
+        [
+          9,
+          11,
+          7
+        ],
+        [
+          9,
+          12,
+          7
+        ]
+      ]
+    }
+  },
+  "animations": {
+    "idle": {
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "walk": {
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    }
+  }
+}

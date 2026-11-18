@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // node tools/sprite-validate.cjs <sheet.png> [metadata.json] [--layer]
 const fs=require('node:fs'),path=require('node:path'),{decode,hex}=require('./png.cjs');
-function validate(file,meta,palette,layer=false){const {w,h,p}=decode(file),cw=meta.cell[0],ch=meta.cell[1],rows=Object.values(meta.anims),cols=Math.max(...rows.map(a=>a.frames));const allowed=new Set([...palette.colors,...Object.values(palette.slots).flat()]);const used=new Set(),issues=[],counts={alpha:0,palette:0,isolated:0,outline:0,anchor:0,blank:0,empty:0};if(w!==cw*cols||h!==ch*rows.length)issues.push('dimensions');let frames=0;
+function validate(file,meta,palette,layer=false){if(meta.kind==='tileset')return require('./tile-validate.cjs')(file,meta,palette);const {w,h,p}=decode(file),cw=meta.cell[0],ch=meta.cell[1],rows=Object.values(meta.anims),cols=Math.max(...rows.map(a=>a.frames));const allowed=new Set([...palette.colors,...Object.values(palette.slots).flat()]);const used=new Set(),issues=[],counts={alpha:0,palette:0,isolated:0,outline:0,anchor:0,blank:0,empty:0};if(w!==cw*cols||h!==ch*rows.length)issues.push('dimensions');let frames=0;
 const slotDark=new Map(Object.values(palette.slots).flatMap(r=>r.map(c=>[c,r.at(-1)])));for(const ramp of Object.values(palette.ramps))for(const c of ramp)slotDark.set(c,ramp.at(-1));
 for(let i=0;i<p.length;i+=4){const a=p[i+3],c=hex(p,i);if(a!==0&&a!==255)counts.alpha++;if(a){used.add(c);if(!allowed.has(c)||(layer&&!palette.slots.spot.includes(c)))counts.palette++;}}
 const pixel=(x,y)=>x<0||x>=w||y<0||y>=h?null:(y*w+x)*4;
