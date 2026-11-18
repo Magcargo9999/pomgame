@@ -1,0 +1,15 @@
+{
+  "pass": true,
+  "protocol": "file:",
+  "animations": 15,
+  "breedPatternCombinations": 20,
+  "distinctBreedLooks": 5,
+  "scales": [
+    1,
+    4,
+    8
+  ],
+  "happyStopsAtLanding": true,
+  "pageErrors": [],
+  "externalRequests": 0
+}
