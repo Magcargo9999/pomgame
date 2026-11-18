@@ -117,7 +117,8 @@ test('ko.json holds the 10 tone sample lines', () => {
 
 test('every sim code the UI shows has a Korean string (events, errors, items, breeds, workers, stages)', () => {
   const simDir = new URL('src/sim/', root);
-  const src = readdirSync(simDir).filter((f) => f.endsWith('.js')).map((f) => readFileSync(new URL(f, simDir), 'utf8')).join('\n');
+  const src = readdirSync(simDir, { recursive: true }).map(String).filter((f) => f.endsWith('.js'))
+    .map((f) => readFileSync(new URL(f.replaceAll('\\', '/'), simDir), 'utf8')).join('\n');
   const need = new Set();
   for (const m of src.matchAll(/\bev\('([a-zA-Z]+)'/g)) need.add(`event.${m[1]}`);
   for (const m of src.matchAll(/'((?:ap|cash|stock|pen|pig|herd|breed|facility|action|param|game|save)\.[a-zA-Z]+)'/g)) need.add(`error.${m[1]}`);
