@@ -84,5 +84,23 @@
     "feed": "faces/npc_feed_face.png",
     "auction": "faces/npc_auction_face.png",
     "worker": "faces/npc_worker_face.png"
+  },
+  "deco": {
+    "deco_barrel": "deco/deco_barrel.png",
+    "deco_bucket": "deco/deco_bucket.png",
+    "deco_bush": "deco/deco_bush.png",
+    "deco_crate": "deco/deco_crate.png",
+    "deco_feedsack": "deco/deco_feedsack.png",
+    "deco_flowers_pink": "deco/deco_flowers_pink.png",
+    "deco_flowers_white": "deco/deco_flowers_white.png",
+    "deco_haybale": "deco/deco_haybale.png",
+    "deco_haypile": "deco/deco_haypile.png",
+    "deco_rock": "deco/deco_rock.png",
+    "deco_stump": "deco/deco_stump.png",
+    "deco_water_pump": "deco/deco_water_pump.png",
+    "deco_wheelbarrow": "deco/deco_wheelbarrow.png",
+    "trough_feed_empty": "deco/trough_feed_empty.png",
+    "trough_feed_full": "deco/trough_feed_full.png",
+    "trough_water": "deco/trough_water.png"
   }
 }
