@@ -29,5 +29,11 @@
     "up": "player/player_base_up.png",
     "right": "player/player_base_right.png",
     "left": "player/player_base_left.png"
+  },
+  "buildings": {
+    "house": "buildings/bld_house.png",
+    "shed": "buildings/bld_shed.png",
+    "piggery_t1": "buildings/bld_piggery_t1.png",
+    "dock": "buildings/bld_dock.png"
   }
 }
