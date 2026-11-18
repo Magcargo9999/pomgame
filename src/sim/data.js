@@ -1,6 +1,7 @@
 // All tunable data. JSON import attributes work in Node 22+ and current browsers (serve over http).
 import base from '../../data/config.json' with { type: 'json' };
 import economy from '../../data/economy.json' with { type: 'json' };
+import species from '../../data/species.json' with { type: 'json' };
 import breeds from '../../data/breeds.json' with { type: 'json' };
 import loci from '../../data/loci.json' with { type: 'json' };
 import items from '../../data/items.json' with { type: 'json' };
@@ -13,6 +14,7 @@ config.market = economy.market;
 config.grades = economy.grades;
 config.brandCert = economy.brandCert;
 
-export { config, economy, breeds, loci, items };
-export const PIG_LOCI = loci.filter((l) => l.species === 'pig');
-export const BV_TRAITS = ['growth', 'lean', 'imf', 'litter'];
+export { config, economy, species, breeds, loci, items };
+
+/** Loci of one species, in loci.json order. */
+export const lociFor = (sp) => loci.filter((l) => l.species === sp);

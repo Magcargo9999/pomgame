@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { makeRng } from '../../src/sim/rng.js';
-import { breedGenome, phenotype, kinship, inbreeding, fRisk, dominantAllele, randomGenome } from '../../src/sim/genetics.js';
+import { breedGenome, kinship, inbreeding, fRisk, dominantAllele, randomGenome } from '../../src/sim/genetics.js';
+import { appearance as phenotype } from '../../src/sim/species/pig/appearance.js';
 
 const bv = { growth: 0, lean: 0, imf: 0, litter: 0 };
 const g = (KIT, MC1R, RYR1, SPOT) => ({ loci: { KIT, MC1R, RYR1, SPOT }, bv: { ...bv } });

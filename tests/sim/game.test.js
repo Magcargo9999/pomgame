@@ -206,3 +206,20 @@ test('breeding produces a litter with pedigree and F', () => {
   assert.equal(kid.sireId, sire.id); assert.equal(kid.damId, dam.id); assert.equal(kid.F, 0);
   assert.equal(kid.breedId, 'crossbred');
 });
+
+test('previews: breeding shows expected F and risk; mix shows fat colour and price', async () => {
+  const { previewBreeding, previewMix } = await import('../../src/sim/index.js');
+  let s = createGame(13); s.cash = 1e8;
+  s = ok(doAction(s, { type: 'buy', itemId: 'boar', breedId: 'duroc' }));
+  const v = getView(s);
+  const gilt = v.pigs.find((p) => p.role === 'breeder' && p.sex === 'F');
+  const boar = v.pigs.find((p) => p.sex === 'M' && p.role === 'breeder');
+  const pb = previewBreeding(s, boar.id, gilt.id);
+  assert.equal(pb.expectedF, 0); assert.equal(pb.risk, 'safe');
+  assert.equal(pb.ok, false); assert.equal(pb.reason, 'breed.invalid', 'gilt is too young on day 1');
+  assert.ok(pb.sire.appearance.coat === 'red');
+  const barley = previewMix({ barley: 0.55, corn: 0.33, soybean_meal: 0.12, vitamin_e: 0.01 });
+  assert.equal(barley.fatColor, 1); assert.equal(barley.vitE, true);
+  assert.ok(previewMix({ food_waste: 1 }).fatColor >= 4);
+  assert.equal(previewMix({}).ok, false);
+});

@@ -1,13 +1,23 @@
 // Game state, actions and the night (endDay). Public surface is re-exported by index.js. See docs/tech/SIM-API.md.
-import { config, items, breeds } from './data.js';
+import { config, items, breeds, species as speciesData } from './data.js';
 import { makeRng, seedFrom } from './rng.js';
-import { randomGenome, breedGenome, mixBreeds, breedIdOf, breedParam, inbreeding, kinship, fRisk, phenotype } from './genetics.js';
-import { newPig, weightForAge, ageOf, stageOf, conditionOf, canShip, inMarketWindow, rationKg, tickPig, slaughter } from './pig.js';
-import { gradePig } from './grading.js';
+import { randomGenome, breedGenome, mixBreeds, breedIdOf, breedParam, inbreeding, kinship, fRisk, depression } from './genetics.js';
+import { conditionOf, treatable, treat } from './disease.js';
+import { newDebt, minDue, pay, payday, debtView, isPayday } from './debt.js';
+import { SAVE_VERSION, serialize, deserialize } from './save.js';
 import { feedProps, normaliseShares, resolveFeed } from './feed.js';
+import { speciesModule } from './species/index.js';
 
-export const SIM_VERSION = 1;
-const SAVE_VERSION = 1;
+// Per-animal calls go through the animal's species module (species/index.js).
+const SP = (a) => speciesModule(a.species);
+const ageOf = (a, day) => SP(a).ageOf(a, day);
+const stageOf = (a, day) => SP(a).stageOf(a, day);
+const canShip = (a, day) => SP(a).canShip(a, day);
+const inMarketWindow = (a, day) => SP(a).inMarketWindow(a, day);
+const rationKg = (a, day) => SP(a).ration(a, day);
+
+export const SIM_VERSION = 2;
+export { serialize, deserialize };
 const DPS = config.time.daysPerSeason;
 const YEAR_DAYS = DPS * config.time.seasons;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -22,7 +32,7 @@ export function createGame(seed = 1) {
     saveVersion: SAVE_VERSION, seed: seedNum, rngState: 0, day: 1, phase: 'playing',
     ap: { left: config.ap.base, max: config.ap.base },
     cash: st.cash,
-    debt: { balance: config.debt.initial, paidThisSeason: 0, arrears: 0, missed: 0 },
+    debt: newDebt(),
     market: { mult: 1, trend: 0 },
     pens: [], pigs: [], pedigree: {}, nextSerial: 1, nextPen: 1, nextRecipe: 1,
     inventory: { feeds: { ...st.feeds }, ingredients: {}, vaccine: 0 },
@@ -46,13 +56,14 @@ function addPen(s, capacity) {
   return id;
 }
 
-function nextId(s) { const n = s.nextSerial++; return { id: `PIG-${String(n).padStart(4, '0')}`, serial: n }; }
+function nextId(s, sp = 'pig') { const n = s.nextSerial++; return { id: `${speciesData[sp].idPrefix}-${String(n).padStart(4, '0')}`, serial: n }; }
 
 function addFounder(s, rng, breedId, sex, ageDays, penId) {
-  const { id, serial } = nextId(s);
-  const pig = newPig({
+  const { id, serial } = nextId(s, breeds[breedId].species);
+  const sp = speciesModule(breeds[breedId].species);
+  const pig = sp.newAnimal({
     id, serial, sex, breedMix: { [breedId]: 1 }, genome: randomGenome(breedId, rng),
-    bornDay: s.day - ageDays, penId, weightKg: weightForAge(ageDays) * (0.95 + rng() * 0.1),
+    bornDay: s.day - ageDays, penId, weightKg: sp.weightForAge(ageDays) * (0.95 + rng() * 0.1),
   });
   s.pigs.push(pig);
   s.pedigree[id] = { sire: null, dam: null, serial };
@@ -68,9 +79,6 @@ const freeSpace = (s, pen) => pen.capacity - penPigs(s, pen.id).length;
 const totalPlaces = (s) => Math.min(config.herdMax, s.pens.reduce((t, p) => t + p.capacity, 0));
 const apMax = (s) => config.ap.base + s.workers.reduce((a, w) => a + items.workers[w.id].apBonus, 0);
 const seasonOf = (day) => Math.floor((day - 1) / DPS);
-const seasonMin = (s) => config.debt.minPerSeason[seasonOf(s.day) % config.debt.minPerSeason.length];
-// Due this season = this season's minimum + unpaid minimums from earlier seasons (arrears).
-const minDue = (s) => Math.min(seasonMin(s) + s.debt.arrears, s.debt.balance);
 const pricePerKg = (s) => Math.round(config.market.carcassPricePerKg * s.market.mult);
 
 class ActionError extends Error { constructor(code, extra) { super(code); this.code = code; this.extra = extra; } }
@@ -123,11 +131,9 @@ const ACTIONS = {
   },
   treatPig(s, a, ev) {
     const pig = needPig(s, a.pigId);
-    const d = pig.disease;
-    if (!((d.state === 'subclinical' && d.detected) || d.state === 'clinical')) fail('pig.notSick');
+    if (!treatable(pig)) fail('pig.notSick');
     spendAp(s, 1); spendCash(s, items.services.vetFee);
-    d.state = 'recovering'; d.days = 0;
-    pig.withdrawalDays = config.disease.withdrawalDays;
+    treat(pig);
     ev('treated', { pigId: pig.id, fee: items.services.vetFee });
   },
   vaccinatePen(s, a, ev) {
@@ -271,8 +277,8 @@ const ACTIONS = {
   payDebt(s, a, ev) {
     const amt = Math.min(Math.floor(a.amount), s.debt.balance);
     if (!(amt > 0)) fail('param.invalid');
-    spendCash(s, amt);
-    s.debt.balance -= amt; s.debt.paidThisSeason += amt;
+    if (s.cash < amt) fail('cash.notEnough');
+    pay(s, amt);
     ev('debtPaid', { amount: amt, balance: s.debt.balance });
   },
   renamePig(s, a) {
@@ -396,8 +402,8 @@ export function endDay(state) {
   const price = pricePerKg(s);
   for (const sh of s.shipments) {
     const pig = pigById(s, sh.pigId); if (!pig) continue;
-    const c = slaughter(pig, sh, rng);
-    const g = gradePig({ ...c });
+    const c = SP(pig).slaughter(pig, sh, rng);
+    const g = SP(pig).grade({ ...c });
     const mult = config.grades[g.grade];
     const truckFee = items.services.truckFeePerPig;
     const revenue = Math.round(c.carcassKg * price * mult) - truckFee;
@@ -418,7 +424,7 @@ export function endDay(state) {
   for (const dam of s.pigs) {
     if (!dam.matingPending) continue;
     const sireId = dam.matingPending; dam.matingPending = null;
-    const p = config.conception * (1 - dam.F * config.inbreedingDepression.litter);
+    const p = config.conception * depression(dam.species, dam.F, 'litter');
     if (pigById(s, sireId) && rng.chance(p)) {
       dam.pregnantDueDay = day + config.life.gestation; dam.pregnantBy = sireId;
       ev('conception', { sireId, damId: dam.id, dueDay: dam.pregnantDueDay });
@@ -435,7 +441,7 @@ export function endDay(state) {
     if (needsFeed && !pen.fedToday) ev('unfed', { penId: pen.id });
     for (const pig of pigs) {
       const damNursing = !!(pig.damId && pigById(s, pig.damId)?.lactatingUntil >= day);
-      const res = tickPig(pig, { day, pen: { hygiene: pen.hygiene, density }, fed: pen.fedToday ? pen.fed : null, damNursing }, rng);
+      const res = SP(pig).tick(pig, { day, pen: { hygiene: pen.hygiene, density }, fed: pen.fedToday ? pen.fed : null, damNursing }, rng);
       for (const r of res) {
         if (r === 'died') dead.push({ pig, cause: pig.disease.state === 'clinical' ? 'disease' : 'health' });
         else if (r === 'clinical') ev('sickVisible', { pigId: pig.id });
@@ -460,17 +466,17 @@ export function endDay(state) {
     dam.lactatingUntil = day + 1 + config.life.weanAt;
     const mix = mixBreeds(sireMix, dam.breedMix);
     const litterBv = ((sireGenome?.bv.litter ?? 0) + dam.genome.bv.litter) / 2;
-    const n = Math.max(1, Math.round(breedParam(dam.breedMix, 'litterBase') * (1 + litterBv * 0.05) * (1 - dam.F * config.inbreedingDepression.litter) + rng.gauss() * 1.5));
+    const n = Math.max(1, Math.round(breedParam(dam.breedMix, 'litterBase') * (1 + litterBv * 0.05) * depression(dam.species, dam.F, 'litter') + rng.gauss() * 1.5));
     const ids = []; let stillborn = 0, soldExtra = 0;
     for (let i = 0; i < n; i++) {
-      const { id, serial } = nextId(s);
+      const { id, serial } = nextId(s, dam.species);
       s.pedigree[id] = { sire: sire.id, dam: dam.id, serial };
       const F = inbreeding(s.pedigree, id);
-      if (!rng.chance(0.95 * (1 - F * config.inbreedingDepression.survival))) { stillborn++; delete s.pedigree[id]; continue; }
+      if (!rng.chance(0.95 * depression(dam.species, F, 'survival'))) { stillborn++; delete s.pedigree[id]; continue; }
       const home = [penById(s, dam.penId), ...s.pens].find((p) => p && freeSpace(s, p) > 0);
       if (!home || herdCount(s) >= config.herdMax) { soldExtra++; delete s.pedigree[id]; continue; }
       const genome = breedGenome(sireGenome, dam.genome, (sireF + dam.F) / 2, rng);
-      const pig = newPig({ id, serial, sex: rng.chance(0.5) ? 'F' : 'M', breedMix: mix, genome, F: Math.round(F * 10000) / 10000,
+      const pig = SP(dam).newAnimal({ id, serial, sex: rng.chance(0.5) ? 'F' : 'M', breedMix: mix, genome, F: Math.round(F * 10000) / 10000,
         sireId: sire.id, damId: dam.id, bornDay: day + 1, penId: home.id, weightKg: config.life.birthKg * (0.85 + rng() * 0.3) });
       s.pigs.push(pig); ids.push(id);
     }
@@ -511,7 +517,7 @@ export function endDay(state) {
   ev('marketMove', { carcassPricePerKg: pricePerKg(s), trend: s.market.trend });
 
   // Debt day.
-  if (day % DPS === 0) payday(s, ev);
+  if (isPayday(day)) payday(s, ev);
 
   // Next day.
   s.day = day + 1;
@@ -525,21 +531,30 @@ export function endDay(state) {
   return { state: s, events };
 }
 
-function payday(s, ev) {
-  // Decision 27: the minimum due (this season + arrears) must be paid in full by payday, or it is a miss.
-  // Full payment resets the count; 3 misses in a row = foreclosure. The sim auto-pays if cash allows.
-  const d = s.debt;
-  let due = Math.max(0, minDue(s) - d.paidThisSeason);
-  let missedNow = false;
-  if (due > 0 && s.cash >= due) { s.cash -= due; d.balance -= due; d.paidThisSeason += due; due = 0; }
-  if (due > 0) { missedNow = true; d.missed++; d.arrears = due; ev('debtMissed', { missed: d.missed, arrears: due }); }
-  else { d.missed = 0; d.arrears = 0; }
-  const interest = Math.round(d.balance * config.debt.ratePerSeason * (missedNow ? config.debt.lateRateMult : 1));
-  d.balance += interest;
-  ev('debtDue', { paid: d.paidThisSeason, interest, balance: d.balance, missed: d.missed, arrears: d.arrears });
-  d.paidThisSeason = 0;
-  if (d.missed >= config.debt.maxMissed) { s.phase = 'foreclosed'; ev('foreclosed'); }
+// ---------- previews (read only, no AP, no RNG) ----------
+/** Breeding screen: expected inbreeding of the litter and whether the pair can breed now. */
+export function previewBreeding(s, sireId, damId) {
+  const sire = pigById(s, sireId), dam = pigById(s, damId);
+  if (!sire || !dam) return { ok: false, reason: 'pig.notFound' };
+  const F = Math.round(kinship(s.pedigree, sire.id, dam.id) * 10000) / 10000;
+  const r = doAction(s, { type: 'breed', sireId, damId });
+  return { ok: r.ok, reason: r.ok ? undefined : r.error.code, expectedF: F, risk: fRisk(F),
+    warning: herdCount(s) >= totalPlaces(s) ? 'herd.full' : null,
+    sire: { appearance: SP(sire).appearance(sire.genome), breedId: breedIdOf(sire.breedMix) },
+    dam: { appearance: SP(dam).appearance(dam.genome), breedId: breedIdOf(dam.breedMix) } };
 }
+
+/** Feed mixer screen: properties of a mix before saving it. */
+export function previewMix(shares) {
+  const n = normaliseShares(shares ?? {});
+  if (!n) return { ok: false, reason: 'param.invalid' };
+  const p = feedProps(n);
+  let price = 0;
+  for (const [k, v] of Object.entries(n)) price += items.ingredients[k].price * v;
+  return { ok: true, shares: n, energy: round2(p.energy), protein: round2(p.protein), unsat: round2(p.unsat), barley: round2(p.barley),
+    vitE: p.vitE >= 0.005, fatColor: Math.max(1, Math.min(7, Math.round(1 + 4 * p.unsat - 1.5 * p.barley))), pricePerKg: Math.round(price) };
+}
+const round2 = (x) => Math.round(x * 100) / 100;
 
 // ---------- view ----------
 export function getView(s) {
@@ -547,8 +562,7 @@ export function getView(s) {
     simVersion: SIM_VERSION, phase: s.phase,
     day: s.day, year: 1 + Math.floor((s.day - 1) / YEAR_DAYS), season: seasonOf(s.day) % config.time.seasons, dayOfSeason: ((s.day - 1) % DPS) + 1,
     ap: { ...s.ap }, cash: s.cash,
-    debt: { balance: s.debt.balance, ratePerSeason: config.debt.ratePerSeason, minPerSeason: seasonMin(s), arrears: s.debt.arrears, minDue: minDue(s), paidThisSeason: s.debt.paidThisSeason,
-      nextDueDay: Math.ceil(s.day / DPS) * DPS, missed: s.debt.missed, maxMissed: config.debt.maxMissed },
+    debt: debtView(s),
     market: { carcassPricePerKg: pricePerKg(s), trend: s.market.trend, gradeMultipliers: { ...config.grades } },
     herd: { count: s.pigs.length, max: config.herdMax, places: totalPlaces(s) },
     pens: s.pens.map((p) => ({ id: p.id, capacity: p.capacity, hygiene: p.hygiene, feed: { ...p.feed }, fedToday: p.fedToday, pigIds: penPigs(s, p.id).map((x) => x.id) })),
@@ -560,7 +574,7 @@ export function getView(s) {
       condition: conditionOf(p), withdrawalDays: p.withdrawalDays, vaccinated: p.vaccinatedUntil >= s.day,
       pregnantDueDay: p.pregnantDueDay, marketWindow: inMarketWindow(p, s.day),
       shippable: canShip(p, s.day) && !s.shipments.some((x) => x.pigId === p.id), shipQueued: s.shipments.some((x) => x.pigId === p.id),
-      appearance: phenotype(p.genome), F: p.F, fRisk: fRisk(p.F),
+      species: p.species, appearance: SP(p).appearance(p.genome), F: p.F, fRisk: fRisk(p.F),
       // Decision 31: no gene lab in the prototype; genotype and breeding values never leave the sim.
       sireId: p.sireId, damId: p.damId, pedigree: pedigree2(s, p.id),
     })),
@@ -577,16 +591,6 @@ function pedigree2(s, id) {
   const ped = s.pedigree; const me = ped[id] ?? {};
   const up = (pid) => (pid ? { id: pid, sireId: ped[pid]?.sire ?? null, damId: ped[pid]?.dam ?? null } : null);
   return { sire: up(me.sire), dam: up(me.dam) };
-}
-
-// ---------- save / load ----------
-export function serialize(s) { return JSON.stringify(s); }
-export function deserialize(str) {
-  let s;
-  try { s = JSON.parse(str); } catch { throw new Error('save.invalid'); }
-  if (!s || typeof s !== 'object' || !Array.isArray(s.pigs) || typeof s.day !== 'number') throw new Error('save.invalid');
-  if (s.saveVersion !== SAVE_VERSION) throw new Error('save.version');
-  return s;
 }
 
 export { breeds };

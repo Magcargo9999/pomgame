@@ -1,6 +1,6 @@
 # SIM-API: 빚더미 목장 simulation core
 
-Status: v2 (backend, branch `backend/sim-core`). The UI talks to the game only through the functions below.
+Status: v2.1 (backend, branch `backend/sim-core`). v2.1 adds `previewBreeding`, `previewMix`, `species` on each pig, save version 2 with migrations. The UI talks to the game only through the functions below.
 Rules: `docs/design/GDD-v0.1.md` (decision table wins over the body; decisions 27-31 are god's rulings). Money: `docs/tech/BALANCE.md`.
 
 **Changes since v1**: places (2 pens × 4 + piggery 22, cap 30), no gene lab and no genotype in the view, consecutive-miss debt with arrears, `movePig` takes a group, every pig defaults to `finisher`, truck fee taken from the sale, `pedigree` (2 generations) on each pig, `breed` carries `warning`, market window 38-44 days.
@@ -14,7 +14,7 @@ Rules: `docs/design/GDD-v0.1.md` (decision table wins over the body; decisions 2
 
 ## 1. Import
 ```js
-import { createGame, getView, listActions, doAction, endDay,
+import { createGame, getView, listActions, doAction, endDay, previewBreeding, previewMix,
          serialize, deserialize, SIM_VERSION } from './src/sim/index.js';
 ```
 
@@ -26,6 +26,8 @@ import { createGame, getView, listActions, doAction, endDay,
 | `listActions(state, target)` | `ActionInfo[]` (§3) | `target`: `{kind:'farm'}`, `{kind:'pen', id}`, `{kind:'pig', id}`, `{kind:'shop'}`. Disabled actions are listed with a `reason` so the menu can grey them out. |
 | `doAction(state, action)` | `{ok, state, events, error?}` | On failure `ok:false`, `state` is the unchanged input, `error = {code, ...}`. On success AP are spent and `events` say what happened. |
 | `endDay(state)` | `{state, events}` | The night: trucks leave, pigs grow, sickness rolls, births, wages, market, payday. The next day starts with full AP. |
+| `previewBreeding(state, sireId, damId)` | `{ok, reason?, expectedF, risk, warning, sire:{appearance, breedId}, dam:{...}}` | Breeding screen. Read only; `ok`/`reason` say whether `breed` would succeed now. |
+| `previewMix(shares)` | `{ok, shares, energy, protein, unsat, barley, vitE, fatColor, pricePerKg}` | Feed mixer screen. `fatColor` 1 (white, best) to 7. |
 | `serialize(state)` | `string` | JSON with `saveVersion`. For autosave (localStorage) and file export. |
 | `deserialize(str)` | `state` | Migrates older saves. Throws `Error('save.invalid')` or `Error('save.version')` (newer than this build). |
 

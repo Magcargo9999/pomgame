@@ -87,17 +87,6 @@
     "vaccineFactor": 0.4,
     "vaccineDays": 56
   },
-  "inbreedingDepression": {
-    "growth": 0.25,
-    "litter": 0.6,
-    "survival": 0.4
-  },
-  "sigmaA": {
-    "growth": 1,
-    "lean": 1,
-    "imf": 1,
-    "litter": 1
-  },
   "mutationRate": 0.002,
   "conception": 0.85
 }

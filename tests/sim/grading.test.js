@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gradePig, grade1, grade2 } from '../../src/sim/grading.js';
+import { gradePig, grade1, grade2 } from '../../src/sim/species/pig/grading.js';
 
 const good = { carcassKg: 88, backfat: 21, imf: 3.2, meatColor: 4, fatColor: 2, bellyScore: 0.8, PSE: false, DFD: false };
 
