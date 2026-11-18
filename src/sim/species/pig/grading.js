@@ -1,5 +1,5 @@
 // Carcass grading (GDD 1.1). Real grades stop at 1+; 'brand' = 1+ plus the farm cert (decision 20).
-import { config } from './data.js';
+import { config } from '../../data.js';
 
 /** Primary grade from carcass weight and backfat: 3 = 1+, 2 = 1, 1 = 2. */
 export function grade1(carcassKg, backfat) {

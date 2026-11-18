@@ -1,10 +1,13 @@
-// One pig: creation, life stage, daily tick (GDD 0.3 order), and carcass at slaughter.
-import { config, items } from './data.js';
-import { breedParam, ryr1Effect, phenotype } from './genetics.js';
+// Pig animal: creation, life stage, daily tick (GDD 0.3 order), carcass at slaughter.
+// Shared rules (genetics, sickness) come from ../../; only pig biology lives here.
+import { config } from '../../data.js';
+import { breedParam, additiveEffect, depression } from '../../genetics.js';
+import { newDisease, stepDisease, PRODUCTIVITY } from '../../disease.js';
+
+const ryr1Effect = (genome) => additiveEffect(genome, 'RYR1');
 
 const G = config.growth;
 const LIFE = config.life;
-const D = config.disease;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const r1 = (x) => Math.round(x * 10) / 10;
 const r2 = (x) => Math.round(x * 100) / 100;
@@ -21,13 +24,13 @@ export function weightForAge(age) {
 export function newPig({ id, serial, sex, breedMix, genome, F = 0, sireId = null, damId = null, bornDay, penId, weightKg }) {
   const w = weightKg ?? LIFE.birthKg;
   return {
-    id, name: null, serial, sex, castrated: false,
-    role: sex === 'F' ? 'breeder' : 'finisher',
+    id, species: 'pig', name: null, serial, sex, castrated: false,
+    role: 'finisher', // every pig is raised for market unless the player keeps it as a breeder
     breedMix, genome, F, sireId, damId, bornDay, penId,
     weightKg: r1(w), backfatMm: r1(1 + w * 0.12), imf: 0, imfStarted: false,
     fatColorSum: 0, fatColorDays: 0, vitEDays: 0,
     health: 100, stress: 15, chronicStress: 15, hunger: 10, affinity: 20,
-    disease: { state: 'healthy', days: 0, detected: false },
+    disease: newDisease(),
     withdrawalDays: 0, vaccinatedUntil: 0,
     pregnantDueDay: null, pregnantBy: null, lactatingUntil: 0, matingPending: null, pettedDay: 0,
   };
@@ -46,14 +49,6 @@ export function stageOf(pig, day) {
   return a < LIFE.matureAt ? 'grower' : 'breeder';
 }
 
-/** Public condition: hidden (undetected subclinical) sickness reads as healthy. */
-export function conditionOf(pig) {
-  const s = pig.disease.state;
-  if (s === 'subclinical') return pig.disease.detected ? 'sick' : 'healthy';
-  if (s === 'clinical') return 'sick';
-  return s; // healthy | recovering | chronic
-}
-
 export function canShip(pig, day) {
   const st = stageOf(pig, day);
   if (!['grower', 'finisher', 'breeder'].includes(st)) return false;
@@ -66,7 +61,6 @@ export function inMarketWindow(pig, day) {
   return pig.role === 'finisher' && a >= LIFE.marketWindow[0] && a <= LIFE.marketWindow[1];
 }
 
-const DISEASE_FACTOR = { healthy: 1, subclinical: 0.9, clinical: 0.5, recovering: 0.9, chronic: 0.8 };
 
 /** Feed the pig would eat today at full ration (kg). */
 export function rationKg(pig, day) {
@@ -108,7 +102,7 @@ export function tickPig(pig, env, rng) {
   if (st !== 'lactating') {
     adg = potentialAdg(pig, st) * (st === 'suckling' ? 1 : energyF * proteinF)
       * (pig.health / 100) * (1 - pig.stress / 200)
-      * DISEASE_FACTOR[pig.disease.state] * (1 - pig.F * config.inbreedingDepression.growth) * fraction;
+      * PRODUCTIVITY[pig.disease.state] * depression('pig', pig.F, 'growth') * fraction;
     if (lysineRestrict) adg *= 0.95;
   } else {
     pig.weightKg = Math.max(100, pig.weightKg - 1.0 * (1 - fraction * 0.6));
@@ -140,21 +134,11 @@ export function tickPig(pig, env, rng) {
   pig.stress = r1(clamp(pig.stress + (target - pig.stress) * 0.3, 0, 100));
   pig.chronicStress = r1(pig.chronicStress * 0.85 + pig.stress * 0.15);
 
-  // 4. Sickness (GDD 0.5).
+  // 4. Sickness (shared state machine, GDD 0.5).
   const d = pig.disease;
-  if (d.state === 'healthy') {
-    const vacc = pig.vaccinatedUntil >= env.day ? D.vaccineFactor : 1;
-    const p = D.pInfectBase * Math.max(0.1, 1 - env.pen.hygiene / 100) * (1 + pig.stress / 100)
-      * Math.max(1, env.pen.density) * vacc;
-    if (rng.chance(p)) { d.state = 'subclinical'; d.days = 0; d.detected = false; }
-  } else {
-    d.days += 1;
-    if (d.state === 'subclinical' && d.days >= D.subclinicalDays) { d.state = 'clinical'; d.days = 0; out.push('clinical'); }
-    else if (d.state === 'clinical' && d.days >= D.neglectDays) {
-      if (rng.chance(D.pDeathNeglect)) { out.push('died'); return out; }
-      d.state = 'chronic'; d.days = 0; out.push('chronic');
-    } else if (d.state === 'recovering' && d.days >= D.recoverDays) { d.state = 'healthy'; d.days = 0; d.detected = false; out.push('recovered'); }
-  }
+  const sick = stepDisease(pig, { day: env.day, hygiene: env.pen.hygiene, density: env.pen.density, stress: pig.stress }, rng);
+  if (sick === 'died') { out.push('died'); return out; }
+  if (sick) out.push(sick);
   // Health.
   let dh = 3;
   if (d.state === 'clinical') dh = -6;
@@ -189,5 +173,3 @@ export function slaughter(pig, ship, rng) {
   return { liveKg: r1(liveKg), carcassKg, backfat, imf: r2(pig.imf || 1.0), meatColor, fatColor, bellyScore, PSE, DFD, defect };
 }
 
-export { phenotype };
-export const pigletPrice = (breedId) => items.piglets[breedId];

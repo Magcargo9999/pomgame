@@ -1,14 +1,14 @@
 {
   "_note": "Money balance. Tuned by tools/balance-sim.js; see docs/tech/BALANCE.md. Each minimum must exceed that season interest.",
-  "startCash": 400000,
+  "startCash": 1000000,
   "debt": {
     "initial": 10000000,
     "ratePerSeason": 0.02,
     "minPerSeason": [
-      600000,
-      600000,
-      600000,
-      600000
+      300000,
+      500000,
+      700000,
+      900000
     ],
     "lateRateMult": 2,
     "maxMissed": 3

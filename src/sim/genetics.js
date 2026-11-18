@@ -1,75 +1,55 @@
-// Genetics: Mendelian loci (GDD 2.2), quantitative breeding values (2.3), pedigree inbreeding (2.4).
-import { PIG_LOCI, BV_TRAITS, breeds, config } from './data.js';
+// Species-agnostic genetics: Mendelian loci (GDD 2.2), breeding values (2.3), pedigree inbreeding (2.4).
+// A genome is { species, loci: {LOCUS: [a, b]}, bv: {trait: number} }. Loci and traits come from data.
+import { species as SPECIES, breeds, config, lociFor } from './data.js';
 
-const locus = (name) => PIG_LOCI.find((l) => l.locus === name);
+const speciesOf = (g) => g.species ?? 'pig';
+const locusDef = (sp, name) => lociFor(sp).find((l) => l.locus === name);
 
 /** Allele expressed by a 'dominant'-mode pair: the one listed first in loci.json wins. */
-export function dominantAllele(name, pair) {
-  const order = locus(name).alleles;
+export function dominantAllele(name, pair, sp = 'pig') {
+  const order = locusDef(sp, name).alleles;
   return order.indexOf(pair[0]) <= order.indexOf(pair[1]) ? pair[0] : pair[1];
 }
 
-const key = (pair) => [...pair].sort().reverse().join(''); // 'Nn', 'NN', 'nn', 'Ss'...
-const ryrKey = (pair) => (pair[0] === 'N' && pair[1] === 'N') ? 'NN'
-  : (pair[0] === 'n' && pair[1] === 'n') ? 'nn' : 'Nn';
-
-export function ryr1Effect(genome) {
-  return locus('RYR1').effects[ryrKey(genome.loci.RYR1)];
+/** Effect entry of an 'additive' locus, keyed like 'NN' / 'Nn' / 'nn' (alleles in loci.json order). */
+export function additiveEffect(genome, name) {
+  const L = locusDef(speciesOf(genome), name);
+  const pair = [...genome.loci[name]].sort((a, b) => L.alleles.indexOf(a) - L.alleles.indexOf(b));
+  return L.effects[pair.join('')];
 }
 
-/** Coat and pattern from the genotype. Feeds the sprite palette swap + pattern layer. */
-export function phenotype(genome) {
-  const L = genome.loci;
-  const kit = dominantAllele('KIT', L.KIT);
-  const mc1r = dominantAllele('MC1R', L.MC1R);
-  const spotted = L.SPOT[0] === 's' && L.SPOT[1] === 's';
-  if (kit === 'I') return { coat: 'white', pattern: 'none', rare: false };
-  let coat, pattern = 'none', rare = false;
-  if (mc1r === 'ED') coat = 'black';
-  else if (mc1r === 'EP') { coat = 'white'; pattern = 'black_spots'; }
-  else coat = 'red';
-  if (spotted) {
-    if (mc1r === 'EP') { pattern = 'patchwork'; rare = true; }
-    else if (coat === 'black') pattern = 'points';
-    else { pattern = 'white_spots'; rare = true; } // red + spots: GDD 2.6 "적반점"
-  }
-  if (kit === 'Be') { pattern = pattern === 'none' ? 'belt' : pattern; }
-  return { coat, pattern, rare };
-}
-
-/** Random founder (shop / start) genome for a breed. */
+/** Random founder genome for a breed (shop or start). */
 export function randomGenome(breedId, rng) {
   const b = breeds[breedId];
+  const sp = b.species;
   const loci = {};
-  for (const L of PIG_LOCI) {
+  for (const L of lociFor(sp)) {
     const freq = b.alleleFreq[L.locus];
     loci[L.locus] = [rng.weighted(freq), rng.weighted(freq)];
   }
   const bv = {};
-  for (const t of BV_TRAITS) bv[t] = round3(b.bvMean[t] + rng.gauss() * config.sigmaA[t] * 0.6);
-  return { loci, bv };
+  for (const t of SPECIES[sp].bvTraits) bv[t] = round3((b.bvMean[t] ?? 0) + rng.gauss() * SPECIES[sp].sigmaA[t] * 0.6);
+  return { species: sp, loci, bv };
 }
 
 /** Child genome from two parents. opts.mutationRate overrides config (tests use 0). */
 export function breedGenome(sire, dam, Fbar, rng, opts = {}) {
+  const sp = speciesOf(sire);
   const mu = opts.mutationRate ?? config.mutationRate;
   const loci = {};
-  for (const L of PIG_LOCI) {
+  for (const L of lociFor(sp)) {
     let a = rng.pick(sire.loci[L.locus]);
     const b = rng.pick(dam.loci[L.locus]);
-    if (mu > 0 && rng() < mu) {
-      const others = L.alleles.filter((x) => x !== a);
-      a = rng.pick(others);
-    }
+    if (mu > 0 && rng() < mu) a = rng.pick(L.alleles.filter((x) => x !== a));
     loci[L.locus] = [a, b];
   }
   // Infinitesimal model: parent mean + Mendelian sampling, shrunk by parental inbreeding.
   const bv = {};
-  for (const t of BV_TRAITS) {
-    const sd = Math.sqrt(0.5 * (1 - Fbar)) * config.sigmaA[t];
+  for (const t of SPECIES[sp].bvTraits) {
+    const sd = Math.sqrt(0.5 * (1 - Fbar)) * SPECIES[sp].sigmaA[t];
     bv[t] = round3((sire.bv[t] + dam.bv[t]) / 2 + rng.gauss() * sd);
   }
-  return { loci, bv };
+  return { species: sp, loci, bv };
 }
 
 /** Breed composition of a child: average of the parents. */
@@ -80,29 +60,29 @@ export function mixBreeds(a, b) {
   return out;
 }
 
+/** Breed id shown to the player: a breed with at least 87.5% share, else 'crossbred'. */
 export function breedIdOf(mix) {
   let best = null, bestV = 0;
   for (const [k, v] of Object.entries(mix)) if (v > bestV) { best = k; bestV = v; }
   return bestV >= 0.875 ? best : 'crossbred';
 }
 
-/** Weighted breed parameter (growthMult, backfatMult, breedIMF, litterBase). */
+/** Weighted breed parameter (any numeric field of breeds.json). */
 export function breedParam(mix, name) {
   let s = 0;
   for (const [k, v] of Object.entries(mix)) s += breeds[k][name] * v;
   return s;
 }
 
-// ---- Pedigree / inbreeding (tabular method via recursive kinship, 8 generations) ----
-// ped: { id: { sire, dam, serial } } ; serial grows with birth order, so parents have smaller serials.
-const MAX_GEN = 8;
+// ---- Pedigree / inbreeding (recursive kinship = tabular method, about 8 generations) ----
+// ped: { id: { sire, dam, serial } }; serial grows with birth order, so parents have smaller serials.
+const MAX_DEPTH = 16;
 
 export function kinship(ped, a, b, depth = 0) {
-  if (!a || !b || depth > MAX_GEN * 2) return 0;
+  if (!a || !b || depth > MAX_DEPTH) return 0;
   if (a === b) return 0.5 * (1 + inbreeding(ped, a, depth + 1));
   const pa = ped[a], pb = ped[b];
   if (!pa || !pb) return 0;
-  // Recurse on the younger animal's parents.
   const [young, old] = pa.serial >= pb.serial ? [a, b] : [b, a];
   const py = ped[young];
   if (!py.sire && !py.dam) return 0;
@@ -120,5 +100,9 @@ export function fRisk(F) {
   return F < 0.03125 ? 'safe' : F < 0.0625 ? 'caution' : F < 0.125 ? 'danger' : 'inbred';
 }
 
+/** Inbreeding depression multiplier for a trait: 1 - F * depression[trait] (data/species.json). */
+export function depression(sp, F, trait) {
+  return 1 - F * (SPECIES[sp].inbreedingDepression[trait] ?? 0);
+}
+
 const round3 = (x) => Math.round(x * 1000) / 1000;
-export { key as genotypeKey };
