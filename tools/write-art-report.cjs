@@ -3,7 +3,7 @@ const v=read('art-review/pig_adult.validation.json'),b=read('art-review/pig_adul
 const lines=v.results.map(r=>'| '+path.relative(root,r.file).replaceAll('\\','/')+' | '+(r.pass?'PASS':'FAIL')+' | '+r.opaqueColors+' | '+r.issues.join('; ')+' |').join('\n');
 const report=`# pig_adult 검수 보고서
 
-상태: **검토용 산출물 준비 / 자동 검사 통과 / 완전 규격 승인 보류**.
+상태: **32px 호환 시트 완료 / 프로토타입 임시용**. 최신 사람 지시의 사실적 화풍은 pig_adult_realistic.html에 별도로 제작했다.
 기준: 공유 저장소 docs/art/SPRITE-SPEC.md v1, 2026-11-18.
 
 ## 산출물
@@ -56,11 +56,11 @@ ${JSON.stringify(b,null,2)}
 - [x] 큰 머리 비율: 정면 머리가 몸의 30% 이상이며 측면 머리도 몸 길이의 약 1/3 이상이다.
 - [x] 재질 램프는 3~4단계로 정의했으며 동일 슬롯을 모든 프레임에 재사용한다.
 - [x] idle 다리 고정, walk 대각선 교차 및 몸통 상승, eat 머리 2~3px 이동·꼬리 흔들기, sleep 엎드림·호흡, happy 2px 점프를 픽셀 편집으로 파생했다.
-- [ ] eat의 코가 바닥에 닿는 표현은 더 손봐야 한다. 특히 right는 머리를 내렸지만 코와 바닥 사이가 남는다.
-- [ ] up의 꼬리 컬은 축소 후 충분히 읽히지 않는다. 단순한 꼬리 끝 모양으로 보인다.
-- [ ] 모든 동작의 외곽선 두께·머리와 몸통 연결부가 완전히 일정하다고 판단할 수 없다. eat 연결부와 걷기 다리 표현은 최종 시각 검토가 필요하다.
+- [x] eat: 정면 코를 접지 행까지 내리고 측면 머리를 회전했다. up은 낮춘 코가 몸에 가려지는 뒤 시점이므로 코를 등 위에 그리지 않는다.
+- [x] up 꼬리는 5×5 연결 픽셀의 안쪽 구멍이 있는 컬로 보완했다.
+- [x] 머리 이동 전 기존 얼굴 특징을 몸 색으로 정리하고, 공통 외곽선 정리와 다리 간격 보존을 모든 프레임에 적용했다.
 
-## 제작 절차 편차: 승인 필요
+## 제작 절차 편차: god 수용 및 보완
 
 이미지 도구에는 512×512, 32×32 격자, 16px 블록, 단색 녹색 배경을 요청했지만 실제 출력은 1254×1254였다. 32×32의 각 영역에서 녹색을 배경으로 분류하고 RGB 최빈색을 선택한 뒤 가장 가까운 마커 색으로 맞췄다. 평균 축소는 사용하지 않았다. 방향별 idle 포즈만 생성했으며 재생성 포함 총 7회였다. 애니메이션 프레임은 생성하지 않았다.
 
@@ -70,7 +70,7 @@ ${JSON.stringify(b,null,2)}
 | --- | --- | ---: |
 ${Object.entries(p).map(([k,r])=>'| '+k+' | '+(r.bounds[2]-r.bounds[0]+1)+'×'+(r.bounds[3]-r.bounds[1]+1)+' | '+r.correctedPixels+' |').join('\n')}
 
-SPRITE-SPEC §5의 “픽셀 20개 정도”보다 보정량이 크다. 이 편차와 위 시각 문제를 숨기지 않았으며, **현재 결과를 완전 규격 통과나 최종 게임 아트로 승인하지 않는다**. god에게 다음 범위 결정을 요청한다: 현재 산출물에서 시각 문제를 추가 픽셀 편집하고 절차 편차를 수용할지, 기준 포즈를 다시 생성할지.
+god은 메시지 2026-11-17T17-43-57-493Z-f9eda9에서 1254px 출력과 기존 25~34px 보정 편차를 수용하고 재생성 없이 픽셀 보완을 지시했다. 꼬리 보완으로 up 보정량은 추가 증가했다. 이 시트는 기존 규격의 프로토타입 임시 자산이다. 사람의 최신 사실적 화풍 지시는 별도 128px 버전으로 진행한다.
 
 버크셔의 여섯 흰 지점은 주둥이·꼬리 끝·네 발로 정의했다. 뒤에서는 주둥이가, 정면에서는 꼬리가 가려지므로 여섯 지점을 억지로 모두 그리지 않는다. points 레이어와 JSON에 이 가림 규칙을 기록했다.
 
@@ -85,7 +85,7 @@ node tools/test-sprite-validate.cjs
 node tools/check-art-preview.cjs
 \`\`\`
 
-도구는 Node 표준 라이브러리만 사용한다. 브라우저 검증만 기존 Playwright 설치를 사용한다. Python, 패키지 설치, git 명령, 원격 업로드는 실행하지 않았다.
+도구는 Node 표준 라이브러리만 사용한다. 브라우저 검증만 기존 Playwright 설치를 사용한다. Python, 패키지 설치, 원격 업로드는 실행하지 않았다. god의 최신 지시로 로컬 git 커밋을 진행한다.
 
 원자료: keyposes/sources.json, keyposes/processing.json, pig_adult.validation.json, pig_adult.browser.json, validation-tests/results.json.
 `;

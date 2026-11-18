@@ -1,13 +1,9 @@
-﻿// User-directed semi-realistic revision. Three generated idle poses; all motion is pixel editing.
+// User-directed semi-realistic revision. Three generated idle poses; all motion is pixel editing.
 const fs=require('node:fs'),path=require('node:path'),{decode,encode}=require('./png.cjs');
 const ROOT=path.resolve(__dirname,'..'),N=128,GROUND=119,W=N*4,H=N*15,NAME='pig_adult_realistic';
 const read=p=>JSON.parse(fs.readFileSync(path.join(ROOT,p))),write=(p,data)=>{fs.mkdirSync(path.dirname(path.join(ROOT,p)),{recursive:true});fs.writeFileSync(path.join(ROOT,p),data);};
-const coat=['#ffd1b0','#efa58e','#cd735f','#743e37'],skin=['#f4a7a1','#ce7978','#854c4a'],eye='#332925',ivory=['#f4e5c8','#cebca0','#a78c75','#665a53'],red=['#dc925a','#b9603d','#843d30','#4d282b'],black=['#85818b','#5d5969','#3d394c','#252438'],blackSkin=['#b87f79','#8d5959','#593d43'];
-const slots={coat:['#ff00ff','#cc00cc','#990099','#660066'],spot:['#00ffff','#00cccc','#009999','#006666'],snout:['#ffff00','#cccc00','#999900']};
-const env={soil:['#c0ad76','#968051','#473b30'],grass:['#b4cd73','#7da95d','#334e40'],wood:['#dfb97b','#b48756','#513b32']};
-const palette={version:2,description:'32 real colors plus 11 genetic markers; 128px semi-realistic revision based on user references.',colors:[...coat,...skin,eye,...ivory,...red,...black,...blackSkin,...Object.values(env).flat()],ramps:{pink:coat,skin,ivory,red,black,blackSkin,eye:[eye],...env},slots,eye};
-const breeds={version:2,breeds:{yorkshire_landrace:{label:'요크셔·랜드레이스',coat,spot:black,snout:skin,pattern:'none'},duroc:{label:'듀록',coat:red,spot:ivory,snout:skin,pattern:'none'},berkshire:{label:'버크셔',coat:black,spot:ivory,snout:skin,pattern:'points'},korean_black:{label:'재래흑돼지',coat:black,spot:ivory,snout:blackSkin,pattern:'none'},spotted:{label:'점박이',coat:ivory,spot:black,snout:skin,pattern:'spots'}}};
-write('docs/art/palette-realistic.json',JSON.stringify(palette,null,2));write('docs/art/breeds-realistic.json',JSON.stringify(breeds,null,2));
+const palette=read('docs/art/palette-realistic.json'),breeds=read('docs/art/breeds-realistic.json'),slots=palette.slots;
+const coat=breeds.breeds.yorkshire_landrace.coat,skin=breeds.breeds.yorkshire_landrace.snout,eye=palette.eye;
 const rgb=h=>h.slice(1).match(/../g).map(v=>parseInt(v,16)),REAL=[...coat,...skin,eye],RGB=REAL.map(rgb),MARK=[...slots.coat,...slots.snout,eye,...slots.spot],M=MARK.map(rgb);
 const at=(a,x,y)=>x<0||x>=N||y<0||y>=N?-1:a[y*N+x];
 function box(a){let x0=N,y0=N,x1=-1,y1=-1;a.forEach((c,i)=>{if(c>=0){x0=Math.min(x0,i%N);x1=Math.max(x1,i%N);y0=Math.min(y0,i/N|0);y1=Math.max(y1,i/N|0);}});return[x0,y0,x1,y1];}
@@ -22,7 +18,16 @@ function warp(a,fn){const b=Array(N*N).fill(null);a.forEach((p,i)=>{if(!p)return
 function breathe(a,up){if(!up)return a.slice();const b=warp(a,(x,y)=>[x,y<106?y-1:y]);for(let x=0;x<N;x++)if(a[105*N+x])b[105*N+x]=a[105*N+x];return b;}
 function animate(a,dir,anim,f){let b;if(anim==='idle')b=breathe(a,f===1);if(anim==='happy')b=warp(a,(x,y)=>[x,y-(f===1?2:0)]);
 if(anim==='walk'){b=breathe(a,f%2===1);for(let i=107*N;i<N*N;i++)b[i]=null;const phase=f<2?[-1,1,1,-1]:[1,-1,-1,1];a.forEach((p,i)=>{if(p?.leg>=0){let dx=dir==='right'&&f%2===0?phase[p.leg%4]*2:0,dy=phase[p.leg%4]>0?-1:0,x=i%N,y=i/N|0;if(x+dx>=0&&x+dx<N)b[(y+dy)*N+x+dx]=p;}});}
-if(anim==='eat'){b=a.map(p=>p?.head?{...p,c:p.c===7||p.c>=4?1:p.c,point:null}:p);a.forEach((p,i)=>{if(!p?.head)return;let x=i%N,y=i/N|0,nx=x,ny=y+2+f;if(dir==='right'){const px=85,py=87,theta=.66+.08*f;nx=Math.round(px+(x-px)*Math.cos(theta)-(y-py)*Math.sin(theta));ny=Math.round(py+(x-px)*Math.sin(theta)+(y-py)*Math.cos(theta))+2;}if(nx>=0&&nx<N&&ny>=0&&ny<N)b[ny*N+nx]=p;});if(f===1)b=warp(b,(x,y,p)=>[x+(p.tail?1:0),y]);}
+if(anim==='eat'){
+ b=a.map(p=>p?.head?{...p,c:1,point:null}:p);
+ if(dir==='right'){
+  b=a.map(p=>p?.head?null:p);const px=85,py=87,theta=.66+.08*f,cs=Math.cos(theta),sn=Math.sin(theta);
+  for(let y=84;y<106;y++)for(let x=79;x<=86;x++)if(!b[y*N+x])b[y*N+x]={c:1,leg:-1,head:false,tail:false,point:null,spot:false,belt:false};
+  // Inverse nearest-neighbor sampling fills every destination pixel, avoiding holes.
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const sx=Math.round(px+(x-px)*cs+(y-2-py)*sn),sy=Math.round(py-(x-px)*sn+(y-2-py)*cs);if(sx<0||sx>=N||sy<0||sy>=N)continue;const p=a[sy*N+sx];if(p?.head)b[y*N+x]=p;}
+ }else a.forEach((p,i)=>{if(p?.head){const y=(i/N|0)+2+f;if(y<N)b[y*N+i%N]=p;}});
+ if(f===1)b=warp(b,(x,y,p)=>[x+(p.tail?1:0),y]);
+}
 if(anim==='sleep'){const bb=box(a.map(p=>p?p.c:-1)),height=GROUND-bb[1];b=warp(a,(x,y)=>[x,GROUND-31+Math.round((y-bb[1])*31/height)]);b=b.map(p=>p?.c===7?{...p,c:3}:p);if(f===1){const c=warp(b,(x,y)=>[x,y<117?y-1:y]);for(let x=0;x<N;x++)if(b[116*N+x])c[116*N+x]=b[116*N+x];b=c;}}
 if(anim==='walk'&&!b.slice(GROUND*N,(GROUND+1)*N).some(Boolean)){for(let x=0;x<N;x++){const p=b[(GROUND-1)*N+x];if(p?.leg===0)b[GROUND*N+x]=p;}}const cleaned=tidy(b.map(p=>p?p.c:-1));return b.map((p,i)=>p?{...p,c:cleaned[i]}:null);}
 const input=read('art-review/realistic-keyposes/sources.json'),bases={},processing={};

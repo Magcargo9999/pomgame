@@ -9,7 +9,7 @@ for(const dir of dirs){let r=prepare(path.resolve(__dirname,'../art-review/keypo
  // Side tail was incorrectly painted as skin. Correct and shorten its outermost column.
  if(dir==='right'){let left=bounds(a)[0];for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=y*32+x;if(x===left)a[i]=-1;else if(x<6&&a[i]>=4&&a[i]<=6)a[i]=1;}a[18*32+22]=7;}
  if(dir==='down'){a[21*32+12]=7;a[21*32+20]=7;for(const x of [15,18])for(const y of [23,24])a[y*32+x]=6;}
- if(dir==='up'){for(let y=22;y<=25;y++)for(let x=14;x<=18;x++)if(a[y*32+x]>=4&&a[y*32+x]<=6)a[y*32+x]=0;for(const y of [23,24])a[y*32+16]=3;}
+ if(dir==='up'){const curl=[[-1,3,3,3,-1],[3,0,0,0,3],[3,0,1,1,3],[3,0,0,3,3],[-1,3,0,3,-1]];for(let y=0;y<5;y++)for(let x=0;x<5;x++)if(curl[y][x]>=0)a[(21+y)*32+14+x]=curl[y][x];}
  for(let n=0;n<6;n++){const c=clean(a);a=c.a;if(!c.edits)break;}
  let raw=prepareRaw(path.resolve(__dirname,'../art-review/keyposes',sources[dir]),r.shiftY),changes=a.reduce((n,v,i)=>n+(v!==raw[i]),0);
  provenance[dir]={source:sources[dir],sourceSize:r.sourceSize,bounds:bounds(a),anchorTranslationY:r.shiftY,correctedPixels:changes};
@@ -30,7 +30,15 @@ function breathing(a,up){if(!up)return a.slice();const b=transform(a,(x,y,p)=>[x
 function frame(a,dir,anim,f){let b;
  if(anim==='idle')b=breathing(a,f===1);
  if(anim==='walk'){b=breathing(a,f%2===1);for(let i=27*32;i<1024;i++)b[i]=null;const swing=f<2?[-1,1,-1,1]:[1,-1,1,-1],dx=swing.map(v=>dir==='right'&&f%2===0?v:0),ranges=[0,1,2,3].map(g=>{const xx=a.flatMap((p,i)=>p?.leg===g?[i%32]:[]);return[Math.min(...xx),Math.max(...xx)];});for(let n=0;n<3;n++)for(let g=0;g<3;g++)if(ranges[g+1][0]+dx[g+1]-ranges[g][1]-dx[g]<2){if(dx[g]>0)dx[g]=0;if(dx[g+1]<0)dx[g+1]=0;}a.forEach((p,i)=>{if(!p||p.leg<0)return;put(b,i%32+dx[p.leg],(i>>5)-(swing[p.leg]>0?1:0),p);});}
- if(anim==='eat'){b=a.map(p=>p?.head?{...p,c:p.c===7||p.c>=4?1:p.c,point:null}:p);a.forEach((p,i)=>{if(p?.head)put(b,i%32,(i>>5)+2+f,p);});if(f===1){const t=b.filter(Boolean);b=transform(b,(x,y,p)=>[x+(p.tail?1:0),y]);}}
+ if(anim==='eat'){
+  b=a.map(p=>p?.head?{...p,c:1,point:null}:p);
+  a.forEach((p,i)=>{if(!p?.head)return;const x=i%32,y=i>>5;let nx=x,ny=y+2+f;
+   if(dir==='right'){const angle=.7+.05*f;nx=Math.round(20+(x-20)*Math.cos(angle)-(y-21)*Math.sin(angle));ny=Math.round(21+(x-20)*Math.sin(angle)+(y-21)*Math.cos(angle))+1;}
+   if(dir==='down'&&p.c>=4&&p.c<=6&&x>=13&&x<=20&&y>=22)ny=Math.min(29,y+4+f);
+   put(b,nx,Math.min(29,ny),p);
+  });
+  if(f===1)b=transform(b,(x,y,p)=>[x+(p.tail?1:0),y]);
+ }
  if(anim==='sleep'){const top=bounds(a.map(p=>p?p.c:-1))[1],height=29-top;b=transform(a,(x,y,p)=>[x,20+Math.round((y-top)*9/height)]);b=b.map(p=>p?.c===7?{...p,c:3}:p);if(f===1){const raised=transform(b,(x,y)=>[x,y<28?y-1:y]);for(let x=0;x<32;x++)if(b[27*32+x])raised[27*32+x]=b[27*32+x];b=raised;}}
  if(anim==='happy')b=transform(a,(x,y)=>[x,y-(f===1?2:0)]);
  // Restore darkest material outline and remove isolated shade pixels after each edit.
