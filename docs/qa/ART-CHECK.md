@@ -40,3 +40,18 @@ Also green: `node --test tools/sprite-validate.test.cjs` (5/5), `validate-pig.cj
 ## L3 In game
 
 **ART-4** `assets/sprites/manifest.json` has `pig.adult: null`, so the game draws code placeholders. Frontend to set it to `pig_adult` (god). Test: `tests/e2e/sprites.test.mjs`. It fails until the manifest is set; with the entry set locally all 4 checks pass and the real sheet renders at 1280×720 (`tests/e2e/screenshots/sprites-ingame-1280x720.png`).
+
+## Piglet (32px, main a9a28f8) — `assets/sprites/pig/piglet*.png`
+
+- **L1:** `piglet.png` and its 3 layers PASS `sprite-validate`. The body is at most 18×13 px, inside the 20×20 juvenile box (GDD 4.2). Only the `happy` frame #1 leaves the anchor row, which is the intended hop.
+- **L3:** the manifest wires `pig.piglet`; `tests/e2e/sprites.test.mjs` validates it with the rest.
+- **L2 eye check** (`art-review/piglet_x8.png`, detail `tests/e2e/screenshots/art-piglet-detail.png`, 10×):
+
+| Check | Result |
+|---|---|
+| Species and direction readable at 1× | PASS |
+| Eyes 1–2 px; legs apart | PASS |
+| Head ≥ 30% of body | PASS |
+| Ramp 3–4 steps | PASS |
+| Stable across frames | PASS |
+| **ART-5 detached pixels** | **MINOR**: a 1 px dot (idle_up, sleep_up) or a 2 px dash (idle_right, eat_right) floats 1–2 px away from the body, most likely a tail that does not touch the rump. It reads as dirt at 1×. Expected: the tail touches the body. |
