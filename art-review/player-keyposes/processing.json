@@ -1,0 +1,11 @@
+{
+  "down": {
+    "automaticCleanupPixels": 87
+  },
+  "up": {
+    "automaticCleanupPixels": 98
+  },
+  "right": {
+    "automaticCleanupPixels": 52
+  }
+}

@@ -1,5 +1,7 @@
 # 스프라이트 추가와 사용
 
+자산 목록은 `asset-index.json`에 있다. 각 항목의 `sheet`와 `metadata`를 읽으면 성체·자돈·타일·집·플레이어 경로를 코드에 나열하지 않아도 된다. 사실형의 `proposedWorldSize`는 통합 제안이며 기존32px 시트를 덮어쓰지 않는다.
+
 동작 정보는 `assets/sprites/<species>/<name>.json`에 있다. `cell`, `anchor`, `anims`를 읽고 시트의 원본 사각형을 계산한다. 행 이름은 `<animation>_<direction>`이며 `row`, `frames`, `ms`, `loop`가 재생을 결정한다. left는 right를 반전한다. happy처럼 `loop:false`인 동작은 마지막 프레임에서 멈춘다.
 
 원본 셀 크기를 게임 월드 크기와 분리한다. 발 위치에 그릴 때 `anchor / cell` 비율을 표시 크기에 곱해 빼면 32px와128px 시트를 같은 발 기준으로 배치할 수 있다. 캔버스 `imageSmoothingEnabled=false`를 사용한다.

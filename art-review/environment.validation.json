@@ -1,0 +1,2057 @@
+{
+  "pass": true,
+  "files": 52,
+  "results": [
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\farm_tiles.png",
+      "pass": true,
+      "size": [
+        128,
+        80
+      ],
+      "tiles": 39,
+      "results": [
+        {
+          "name": "grass_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_4",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_5",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_6",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_7",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_8",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_9",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_a",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_b",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_c",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_d",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_e",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_f",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "gate_closed",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "gate_open",
+          "colors": 2,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_0",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_1",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_1",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_1",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_2",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\art-review\\farm_tiles_x8.png",
+      "pass": true,
+      "size": [
+        1024,
+        640
+      ],
+      "tiles": 39,
+      "results": [
+        {
+          "name": "grass_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "grass_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "dirt_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "pen_floor_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_4",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_5",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_6",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_7",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_8",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_9",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_a",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_b",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_c",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_d",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_e",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "fence_f",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "gate_closed",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "gate_open",
+          "colors": 2,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_0",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_1",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_1",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_1",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_0_2",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_1_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        },
+        {
+          "name": "old_house_2_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\grass_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "grass_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\grass_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "grass_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\grass_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "grass_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\grass_3.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "grass_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\dirt_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "dirt_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\dirt_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "dirt_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\dirt_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "dirt_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\dirt_3.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "dirt_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\pen_floor_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "pen_floor_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\pen_floor_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "pen_floor_1",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\pen_floor_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "pen_floor_2",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\pen_floor_3.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "pen_floor_3",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_1",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_2",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_3.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_3",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_4.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_4",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_5.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_5",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_6.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_6",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_7.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_7",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_8.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_8",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_9.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_9",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_a.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_a",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_b.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_b",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_c.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_c",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_d.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_d",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_e.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_e",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\fence_f.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "fence_f",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\gate_closed.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "gate_closed",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\gate_open.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "gate_open",
+          "colors": 2,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_0_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_0_0",
+          "colors": 3,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_1_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_1_0",
+          "colors": 4,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_2_0.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_2_0",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_0_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_0_1",
+          "colors": 5,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_1_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_1_1",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_2_1.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_2_1",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_0_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_0_2",
+          "colors": 6,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_1_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_1_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:\\Users\\Magcargo\\pyeonAgent\\worktrees\\--mwky1b1d\\assets\\sprites\\tiles\\old_house_2_2.png",
+      "pass": true,
+      "size": [
+        16,
+        16
+      ],
+      "tiles": 1,
+      "results": [
+        {
+          "name": "old_house_2_2",
+          "colors": 7,
+          "counts": {
+            "alpha": 0,
+            "palette": 0,
+            "isolated": 0,
+            "outline": 0,
+            "seam": 0
+          }
+        }
+      ],
+      "issues": [],
+      "anchor": "not applicable to tiles; compound building checked separately"
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/buildings/old_house.png",
+      "pass": true,
+      "size": [
+        48,
+        48
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/old_house.png",
+      "pass": true,
+      "size": [
+        48,
+        48
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/old_house_x8.png",
+      "pass": true,
+      "size": [
+        384,
+        384
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/assets/sprites/player/player.png",
+      "pass": true,
+      "size": [
+        64,
+        192
+      ],
+      "frames": 18,
+      "opaqueColors": 10,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player_x8.png",
+      "pass": true,
+      "size": [
+        512,
+        1536
+      ],
+      "frames": 18,
+      "opaqueColors": 10,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/down.png",
+      "pass": true,
+      "size": [
+        16,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 10,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/down_x8.png",
+      "pass": true,
+      "size": [
+        128,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 10,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/up.png",
+      "pass": true,
+      "size": [
+        16,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 6,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/up_x8.png",
+      "pass": true,
+      "size": [
+        128,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 6,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/right.png",
+      "pass": true,
+      "size": [
+        16,
+        32
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    },
+    {
+      "file": "C:/Users/Magcargo/pyeonAgent/worktrees/--mwky1b1d/art-review/player-keyposes/right_x8.png",
+      "pass": true,
+      "size": [
+        128,
+        256
+      ],
+      "frames": 1,
+      "opaqueColors": 8,
+      "counts": {
+        "alpha": 0,
+        "palette": 0,
+        "isolated": 0,
+        "outline": 0,
+        "anchor": 0,
+        "blank": 0,
+        "empty": 0
+      },
+      "issues": [],
+      "layer": false
+    }
+  ]
+}

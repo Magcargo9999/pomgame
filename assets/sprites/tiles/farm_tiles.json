@@ -1,0 +1,387 @@
+{
+  "kind": "tileset",
+  "cell": [
+    16,
+    16
+  ],
+  "columns": 8,
+  "palette": "docs/art/palette.json",
+  "tiles": {
+    "grass_0": {
+      "index": 0,
+      "col": 0,
+      "row": 0,
+      "kind": "grass",
+      "passable": true,
+      "seamless": true
+    },
+    "grass_1": {
+      "index": 1,
+      "col": 1,
+      "row": 0,
+      "kind": "grass",
+      "passable": true,
+      "seamless": true
+    },
+    "grass_2": {
+      "index": 2,
+      "col": 2,
+      "row": 0,
+      "kind": "grass",
+      "passable": true,
+      "seamless": true
+    },
+    "grass_3": {
+      "index": 3,
+      "col": 3,
+      "row": 0,
+      "kind": "grass",
+      "passable": true,
+      "seamless": true
+    },
+    "dirt_0": {
+      "index": 4,
+      "col": 4,
+      "row": 0,
+      "kind": "dirt",
+      "passable": true,
+      "seamless": true
+    },
+    "dirt_1": {
+      "index": 5,
+      "col": 5,
+      "row": 0,
+      "kind": "dirt",
+      "passable": true,
+      "seamless": true
+    },
+    "dirt_2": {
+      "index": 6,
+      "col": 6,
+      "row": 0,
+      "kind": "dirt",
+      "passable": true,
+      "seamless": true
+    },
+    "dirt_3": {
+      "index": 7,
+      "col": 7,
+      "row": 0,
+      "kind": "dirt",
+      "passable": true,
+      "seamless": true
+    },
+    "pen_floor_0": {
+      "index": 8,
+      "col": 0,
+      "row": 1,
+      "kind": "pen_floor",
+      "passable": true,
+      "seamless": true
+    },
+    "pen_floor_1": {
+      "index": 9,
+      "col": 1,
+      "row": 1,
+      "kind": "pen_floor",
+      "passable": true,
+      "seamless": true
+    },
+    "pen_floor_2": {
+      "index": 10,
+      "col": 2,
+      "row": 1,
+      "kind": "pen_floor",
+      "passable": true,
+      "seamless": true
+    },
+    "pen_floor_3": {
+      "index": 11,
+      "col": 3,
+      "row": 1,
+      "kind": "pen_floor",
+      "passable": true,
+      "seamless": true
+    },
+    "fence_0": {
+      "index": 12,
+      "col": 4,
+      "row": 1,
+      "kind": "fence",
+      "connections": 0,
+      "passable": false
+    },
+    "fence_1": {
+      "index": 13,
+      "col": 5,
+      "row": 1,
+      "kind": "fence",
+      "connections": 1,
+      "passable": false
+    },
+    "fence_2": {
+      "index": 14,
+      "col": 6,
+      "row": 1,
+      "kind": "fence",
+      "connections": 2,
+      "passable": false
+    },
+    "fence_3": {
+      "index": 15,
+      "col": 7,
+      "row": 1,
+      "kind": "fence",
+      "connections": 3,
+      "passable": false
+    },
+    "fence_4": {
+      "index": 16,
+      "col": 0,
+      "row": 2,
+      "kind": "fence",
+      "connections": 4,
+      "passable": false
+    },
+    "fence_5": {
+      "index": 17,
+      "col": 1,
+      "row": 2,
+      "kind": "fence",
+      "connections": 5,
+      "passable": false
+    },
+    "fence_6": {
+      "index": 18,
+      "col": 2,
+      "row": 2,
+      "kind": "fence",
+      "connections": 6,
+      "passable": false
+    },
+    "fence_7": {
+      "index": 19,
+      "col": 3,
+      "row": 2,
+      "kind": "fence",
+      "connections": 7,
+      "passable": false
+    },
+    "fence_8": {
+      "index": 20,
+      "col": 4,
+      "row": 2,
+      "kind": "fence",
+      "connections": 8,
+      "passable": false
+    },
+    "fence_9": {
+      "index": 21,
+      "col": 5,
+      "row": 2,
+      "kind": "fence",
+      "connections": 9,
+      "passable": false
+    },
+    "fence_a": {
+      "index": 22,
+      "col": 6,
+      "row": 2,
+      "kind": "fence",
+      "connections": 10,
+      "passable": false
+    },
+    "fence_b": {
+      "index": 23,
+      "col": 7,
+      "row": 2,
+      "kind": "fence",
+      "connections": 11,
+      "passable": false
+    },
+    "fence_c": {
+      "index": 24,
+      "col": 0,
+      "row": 3,
+      "kind": "fence",
+      "connections": 12,
+      "passable": false
+    },
+    "fence_d": {
+      "index": 25,
+      "col": 1,
+      "row": 3,
+      "kind": "fence",
+      "connections": 13,
+      "passable": false
+    },
+    "fence_e": {
+      "index": 26,
+      "col": 2,
+      "row": 3,
+      "kind": "fence",
+      "connections": 14,
+      "passable": false
+    },
+    "fence_f": {
+      "index": 27,
+      "col": 3,
+      "row": 3,
+      "kind": "fence",
+      "connections": 15,
+      "passable": false
+    },
+    "gate_closed": {
+      "index": 28,
+      "col": 4,
+      "row": 3,
+      "kind": "gate",
+      "state": "closed",
+      "passable": false
+    },
+    "gate_open": {
+      "index": 29,
+      "col": 5,
+      "row": 3,
+      "kind": "gate",
+      "state": "open",
+      "passable": true
+    },
+    "old_house_0_0": {
+      "index": 30,
+      "col": 6,
+      "row": 3,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        0,
+        0
+      ]
+    },
+    "old_house_1_0": {
+      "index": 31,
+      "col": 7,
+      "row": 3,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        1,
+        0
+      ]
+    },
+    "old_house_2_0": {
+      "index": 32,
+      "col": 0,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        2,
+        0
+      ]
+    },
+    "old_house_0_1": {
+      "index": 33,
+      "col": 1,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        0,
+        1
+      ]
+    },
+    "old_house_1_1": {
+      "index": 34,
+      "col": 2,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        1,
+        1
+      ]
+    },
+    "old_house_2_1": {
+      "index": 35,
+      "col": 3,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        2,
+        1
+      ]
+    },
+    "old_house_0_2": {
+      "index": 36,
+      "col": 4,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        0,
+        2
+      ]
+    },
+    "old_house_1_2": {
+      "index": 37,
+      "col": 5,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        1,
+        2
+      ]
+    },
+    "old_house_2_2": {
+      "index": 38,
+      "col": 6,
+      "row": 4,
+      "kind": "old_house",
+      "passable": false,
+      "group": "old_house",
+      "groupCell": [
+        2,
+        2
+      ]
+    }
+  },
+  "groups": {
+    "old_house": {
+      "size": [
+        3,
+        3
+      ],
+      "tiles": [
+        "old_house_0_0",
+        "old_house_1_0",
+        "old_house_2_0",
+        "old_house_0_1",
+        "old_house_1_1",
+        "old_house_2_1",
+        "old_house_0_2",
+        "old_house_1_2",
+        "old_house_2_2"
+      ]
+    }
+  },
+  "sources": {
+    "grass": "grass.source.png",
+    "dirt": "dirt.source.png",
+    "pen_floor": "pen_floor.source.png",
+    "fence": "fence.source.png",
+    "gate": "gate.source.png",
+    "old_house": "old_house.source.png"
+  },
+  "rows": 5
+}

@@ -1,0 +1,49 @@
+{
+  "name": "farm_tiles",
+  "cell": 16,
+  "columns": 8,
+  "sourceDir": "art-review/terrain-keyposes",
+  "palette": "docs/art/palette.json",
+  "ramps": {
+    "grass": "grass",
+    "earth": "wood",
+    "roof": "red"
+  },
+  "sources": {
+    "grass": "grass.source.png",
+    "dirt": "dirt.source.png",
+    "pen_floor": "pen_floor.source.png",
+    "fence": "fence.source.png",
+    "gate": "gate.source.png",
+    "old_house": "old_house.source.png"
+  },
+  "groundVariants": 4,
+  "houseSize": [
+    48,
+    48
+  ],
+  "connectionBits": {
+    "north": 1,
+    "east": 2,
+    "south": 4,
+    "west": 8
+  },
+  "grassHighlights": [
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      5
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      11
+    ]
+  ]
+}

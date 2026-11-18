@@ -1,0 +1,55 @@
+{
+  "kind": "character",
+  "cell": [
+    16,
+    32
+  ],
+  "anchor": [
+    8,
+    31
+  ],
+  "slots": [],
+  "palette": "docs/art/palette.json",
+  "left": {
+    "source": "right",
+    "flipX": true
+  },
+  "anims": {
+    "idle_down": {
+      "row": 0,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_up": {
+      "row": 1,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "idle_right": {
+      "row": 2,
+      "frames": 2,
+      "ms": 500,
+      "loop": true
+    },
+    "walk_down": {
+      "row": 3,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_up": {
+      "row": 4,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    },
+    "walk_right": {
+      "row": 5,
+      "frames": 4,
+      "ms": 140,
+      "loop": true
+    }
+  }
+}
