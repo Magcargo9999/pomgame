@@ -4,12 +4,30 @@
     "adult": {
       "sheet": "pig/pig_adult.png",
       "meta": "pig/pig_adult.json",
-      "layers": { "belt": "pig/pig_adult.belt.png", "spots": "pig/pig_adult.spots.png", "points": "pig/pig_adult.points.png" }
+      "layers": {
+        "belt": "pig/pig_adult.belt.png",
+        "spots": "pig/pig_adult.spots.png",
+        "points": "pig/pig_adult.points.png"
+      }
     },
     "piglet": {
       "sheet": "pig/piglet.png",
       "meta": "pig/piglet.json",
-      "layers": { "belt": "pig/piglet.belt.png", "spots": "pig/piglet.spots.png", "points": "pig/piglet.points.png" }
+      "layers": {
+        "belt": "pig/piglet.belt.png",
+        "spots": "pig/piglet.spots.png",
+        "points": "pig/piglet.points.png"
+      }
     }
+  },
+  "player": {
+    "farmer": {
+      "sheet": "player/player_import.png",
+      "meta": "player/player.json"
+    },
+    "down": "player/player_base_down.png",
+    "up": "player/player_base_up.png",
+    "right": "player/player_base_right.png",
+    "left": "player/player_base_left.png"
   }
 }
