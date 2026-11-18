@@ -1,0 +1,23 @@
+{
+  "pig": {
+    "module": "pig",
+    "idPrefix": "PIG",
+    "bvTraits": [
+      "growth",
+      "lean",
+      "imf",
+      "litter"
+    ],
+    "sigmaA": {
+      "growth": 1,
+      "lean": 1,
+      "imf": 1,
+      "litter": 1
+    },
+    "inbreedingDepression": {
+      "growth": 0.25,
+      "litter": 0.6,
+      "survival": 0.4
+    }
+  }
+}
